@@ -25,39 +25,49 @@ def ProcessXMLTree(readXMLFile):
 def CreateDirectoryForSoftwarePackage(softwarePackageName):
 	"""This function creates a folder for software package imported through data source in workFiles/processedFiles"""
 	dirName = os.path.join(os.path.dirname(__file__), '..', 'workFiles', 'processedFiles',softwarePackageName)
+	XMLScriptDirectory = ''
 	if not os.path.exists(dirName):
 		os.mkdir(dirName)
 		print("Directory for software package, " + softwarePackageName + " created at " + dirName)
+		XMLScriptDirectory = os.path.join(dirName,'XMLScripts')
+		os.mkdir(XMLScriptDirectory)
+		print("Directory for XML scripts for corresponding software package, generated at: " + XMLScriptDirectory)
 	else:
 		print("Directory for software package already exists.")
-	return dirName
+	return dirName, XMLScriptDirectory
 
-def GenerateScriptForCommandNameInSoftwarePackageFolder(dirName,commandName):
+def GenerateScriptForCommandNameInSoftwarePackageFolder(XMLScriptDirectory,commandName):
 	fileName = commandName + ".xml"
-	filePath = os.path.join(dirName,fileName)
+	filePath = os.path.join(XMLScriptDirectory,fileName)
 	file = open(filePath, 'wb')
 	print("File " + filePath +" for command, " + commandName +" created")
 	return file
 
 
-def ProcessElement(element,dirName):
+def ProcessElement(element,dirName,XMLScriptDirectory):
 	for elementContent in element:
 		tag = elementContent.tag
 		text = elementContent.text
 		if 'commandName' in tag:
-			fileCreated = GenerateScriptForCommandNameInSoftwarePackageFolder(dirName,text)
+			fileCreated = GenerateScriptForCommandNameInSoftwarePackageFolder(XMLScriptDirectory,text)
 			parent = ET.Element(text)
 		elif 'param' in tag:
 			if 'Value' not in tag and text is not None:
 				paramValueTag = tag + "Value"
-				child = ET.SubElement(parent,text)
+				childtag = 'parameter'
+				child = ET.SubElement(parent,childtag)
+				child.text = text
 			elif paramValueTag in tag:
 				if text is not None:
 					if 'NA' in text :
 						#dependency mapping
-						grandChild = ET.SubElement(child,"NA")
+						grandchildtag = 'parametervalues'
+						grandChild = ET.SubElement(child,grandchildtag)
+						grandChild.text = "NA"
 					else:
-						grandChild = ET.SubElement(child,text)
+						grandchildtag = 'parametervalues'
+						grandChild = ET.SubElement(child,grandchildtag)
+						grandChild.text = text
 				else:
 					#dependency mapping
 					grandchild = ET.SubElement(child,"None")
@@ -92,12 +102,12 @@ class CreateWorkFiles(object):
 	"""This Function processes the XML tree and creates separate card/XML files for each of the command suits"""
 	def __init__(self, root):
 		self.root = root
-		dirName = CreateDirectoryForSoftwarePackage(self.root.tag)
+		self.dirName, self.XMLScriptDirectory = CreateDirectoryForSoftwarePackage(self.root.tag)
 
 		num = 0
 		for index in range(0,((len(self.root)-1)+1)):
 #			for element in self.root[index]:
-			ProcessElement(self.root[index], dirName)
+			ProcessElement(self.root[index], self.dirName, self.XMLScriptDirectory)
 
 
 
