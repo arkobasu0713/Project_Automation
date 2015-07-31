@@ -72,12 +72,8 @@ def ProcessElement(element,dirName,XMLScriptDirectory):
 					#dependency mapping
 					grandchild = ET.SubElement(child,"None")
 
-#	xml = MNDOM.parseString(ET.tostring(parent,'utf-8'))
-#	prettyXMLasString = xml.toprettyxml()
 	tree = ET.ElementTree(parent)
 	tree.write(fileCreated)
-#	fileCreated.write(prettyXMLasString)
-
 
 class ImportXMLSampleSource(object):
 	"""This is where the sample XML data source is consumed.
@@ -109,15 +105,7 @@ class CreateWorkFiles(object):
 #			for element in self.root[index]:
 			ProcessElement(self.root[index], self.dirName, self.XMLScriptDirectory)
 
-
-
-
-
-
-
-
-
-
+		
 
 
 

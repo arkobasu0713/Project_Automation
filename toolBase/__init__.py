@@ -8,3 +8,4 @@ sys.path.insert(0, os.path.abspath(ext))
 sys.path.append(six)
 
 from .main import ImportXMLSampleSource, CreateWorkFiles
+from .procSoftPack import processSoftwarePackage
