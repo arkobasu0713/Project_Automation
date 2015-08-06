@@ -1,3 +1,4 @@
+#Author: Arko Basu [ HGST Inc.]
 import os
 import sys
 
@@ -9,3 +10,4 @@ sys.path.append(six)
 
 from .main import ImportXMLSampleSource, CreateWorkFiles
 from .procSoftPack import processSoftwarePackage
+from .dynamicMapping import processSoftwarePackageXMLs

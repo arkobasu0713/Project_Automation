@@ -29,7 +29,7 @@ def CreateDirectoryForSoftwarePackage(softwarePackageName):
 	if not os.path.exists(dirName):
 		os.mkdir(dirName)
 		print("Directory for software package, " + softwarePackageName + " created at " + dirName)
-		XMLScriptDirectory = os.path.join(dirName,'XMLScripts')
+		XMLScriptDirectory = os.path.join(dirName,'OriginalXMLScripts')
 		os.mkdir(XMLScriptDirectory)
 		print("Directory for XML scripts for corresponding software package, generated at: " + XMLScriptDirectory)
 	else:
@@ -45,32 +45,33 @@ def GenerateScriptForCommandNameInSoftwarePackageFolder(XMLScriptDirectory,comma
 
 
 def ProcessElement(element,dirName,XMLScriptDirectory):
+	childTag = 'parameter'
+	grandChildtag = 'parametervalues'
 	for elementContent in element:
 		tag = elementContent.tag
 		text = elementContent.text
 		if 'commandName' in tag:
 			fileCreated = GenerateScriptForCommandNameInSoftwarePackageFolder(XMLScriptDirectory,text)
-			parent = ET.Element(text)
+			parent = ET.Element(tag)
+			parent.text = text
 		elif 'param' in tag:
 			if 'Value' not in tag and text is not None:
 				paramValueTag = tag + "Value"
-				childtag = 'parameter'
-				child = ET.SubElement(parent,childtag)
+				child = ET.SubElement(parent,childTag)
 				child.text = text
 			elif paramValueTag in tag:
 				if text is not None:
 					if 'NA' in text :
 						#dependency mapping
-						grandchildtag = 'parametervalues'
-						grandChild = ET.SubElement(child,grandchildtag)
+						grandChild = ET.SubElement(child,grandChildtag)
 						grandChild.text = "NA"
 					else:
-						grandchildtag = 'parametervalues'
-						grandChild = ET.SubElement(child,grandchildtag)
+						grandChild = ET.SubElement(child,grandChildtag)
 						grandChild.text = text
 				else:
 					#dependency mapping
-					grandchild = ET.SubElement(child,"None")
+					grandChild = ET.SubElement(child,grandChildtag)
+					grandChild.text = "None"
 
 	tree = ET.ElementTree(parent)
 	tree.write(fileCreated)
@@ -102,7 +103,6 @@ class CreateWorkFiles(object):
 
 		num = 0
 		for index in range(0,((len(self.root)-1)+1)):
-#			for element in self.root[index]:
 			ProcessElement(self.root[index], self.dirName, self.XMLScriptDirectory)
 
 		

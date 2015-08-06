@@ -6,6 +6,7 @@
 
 from toolBase import ImportXMLSampleSource, CreateWorkFiles
 from toolBase import procSoftPack as PSP
+from toolBase import dynamicMapping as DM
 import argparse
 import sys
 import os
@@ -18,6 +19,11 @@ def ProcessXMLDataSource(xmlDataSource):
 	softwarePackageFolder = CreateWorkFiles(File.root)
 	print("At this point, the input data source has been processed and the correspoding files have been generated in " + softwarePackageFolder.dirName)
 	print("Please verify the XML files in the above mentioned folder.")
+	yOrNDynamicMapping = input("Do you wish to tag/add dynamic mapping to the software package commands and modify the XML suits? (y/n)[Please note that this is a one time setup]: ")
+	if yOrNDynamicMapping.upper() == 'Y':
+		print("Going into dynamic mapping procedure.")
+		DM.processSoftwarePackageXMLs(softwarePackageFolder.XMLScriptDirectory)
+		#dynamic mapping procedure
 	return File
 
 
@@ -65,15 +71,22 @@ if __name__ == "__main__":
 				for dataSource in ListOfXMLDataSource:
 					print(str(indexSource) + ". " + dataSource)
 					indexSource = indexSource + 1
-				yesOrNo = input("Do you wish to proceed with any of the above data sources? (Y/N) : ")
-				if yesOrNo.upper() == 'Y':
-					sourceNum = input("Enter the serial number from the above list, of which one do you wish to proceed with? : ")
-					print("The sample data source being used for processing is: " + ListOfXMLDataSource[int(sourceNum)-1])
-					xmlDataSource = ListOfXMLDataSource[int(sourceNum)-1]
-					rootFileElement = ProcessXMLDataSource(xmlDataSource)
-				else:
-					print("I'm done. I don't know what you want me to do. Fix up your mind first.")
-				
+				while True:
+					try:
+						yesOrNo = input("Do you wish to proceed with any of the above data sources? (Y/N) : ")
+						if yesOrNo.upper() == 'Y':
+							sourceNum = int(input("Enter the serial number from the above list, of which one do you wish to proceed with? : "))
+							break
+						elif yesOrNo.upper() == 'N':
+							print("Ok. Bye. I'm done.")
+							break
+					except ValueError:
+						print("Oops! That's not a number. Try Again... ")
+					else:
+						print("Please enter correct option again.")
+				print("The sample data source being used for processing is: " + ListOfXMLDataSource[sourceNum-1])
+				xmlDataSource = ListOfXMLDataSource[sourceNum-1]
+				rootFileElement = ProcessXMLDataSource(xmlDataSource)
 			else:
 				print("No sample XML data source found. This is crazy. I don't have anything to work with. Sorry. I'm done.")
 				sys.exit(0)
@@ -82,14 +95,7 @@ if __name__ == "__main__":
 		rootFileElement = ProcessXMLDataSource(xmlDataSource)
 
 	#Proceed with the software package processing XMLs
-	selectionOfSoftwarePackage = int(input("Please input the serial number for the software package that you wish to run the test suit for: "))
-	PSP.processSoftwarePackage(dictionaryOfSoftwarePackages[selectionOfSoftwarePackage],LogFilePath,rootFileElement)
-	
-
-
-
-
-
-
-
-
+	"""if len(dictionaryOfSoftwarePackages) > 0:
+		selectionOfSoftwarePackage = int(input("Please input the serial number for the software package that you wish to run the test suit for: "))
+		PSP.processSoftwarePackage(dictionaryOfSoftwarePackages[selectionOfSoftwarePackage],LogFilePath,rootFileElement)
+"""
