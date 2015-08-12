@@ -7,6 +7,7 @@
 from toolBase import ImportXMLSampleSource, CreateWorkFiles
 from toolBase import procSoftPack as PSP
 from toolBase import dynamicMapping as DM
+from toolBase import dynamicMapping2 as DM2
 import argparse
 import sys
 import os
@@ -21,11 +22,18 @@ def ProcessXMLDataSource(xmlDataSource):
 	print("Please verify the XML files in the above mentioned folder.")
 	yOrNDynamicMapping = input("Do you wish to tag/add dynamic mapping to the software package commands and modify the XML suits? (y/n)[Please note that this is a one time setup]: ")
 	if yOrNDynamicMapping.upper() == 'Y':
-		print("Going into dynamic mapping procedure.")
-		DM.processSoftwarePackageXMLs(softwarePackageFolder.XMLScriptDirectory)
+		print("Going into dynamic mapping procedure 2.")
+		#DM.processSoftwarePackageXMLs(softwarePackageFolder.XMLScriptDirectory)
+		DM2.processSoftwarePackageXMLs(softwarePackageFolder.XMLScriptDirectory)
 		#dynamic mapping procedure
 	return File
 
+def XMLDirectoryForSoftwarePackage(softwarePackageDirectory):
+	"""This function returns the XML Script directory under the software package"""
+	dirName = os.path.join(softwarePackageDirectory, 'OriginalXMLScripts')
+	if not os.path.exists(dirName):
+		print("Directory for software package not found. There is something wrong with the script buildup while processing the sample data source. Please start again.")
+	return dirName
 
 def LookForDataSource():
 	filePath = os.path.join(os.path.dirname(__file__), 'workFiles','sampleFiles')
@@ -62,6 +70,15 @@ if __name__ == "__main__":
 				dictionaryOfSoftwarePackages[num] = pathForPackage
 				print(str(num) + ". " + indvdir)
 				num = num + 1
+			option = int(input("select the software package that you wish to work with, from the above list: "))
+			XMLScriptsDir = XMLDirectoryForSoftwarePackage(dictionaryOfSoftwarePackages[option])
+			dynamicMap = (input("Do you wish to add dynamic mapping command arguments(y/n)?")).upper()
+			if dynamicMap == 'Y':
+				print("Going into dynamic mapping procedure 2.")
+				#DM.processSoftwarePackageXMLs(XMLScriptsDir)
+				DM2.processSoftwarePackageXMLs(XMLScriptsDir)
+			else:
+				print("Test Suit trigger.")	
 		else:
 			print("No compiled sources discovered. Test Suit is checking the sampleFiles folder for any default schema available.")
 			ListOfXMLDataSource = LookForDataSource()

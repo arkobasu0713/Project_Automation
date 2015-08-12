@@ -16,8 +16,8 @@ def parseXMLScript(commandScript):
 	else:
 		print("Malicious corrupted XML File. Please generate the XML file again")
 
-	root = tree.getroot()
-	return root
+	
+	return tree
 
 
 def createModifyXMLScriptDirectory(originalXMLScriptDirectory):
@@ -30,21 +30,63 @@ def createModifyXMLScriptDirectory(originalXMLScriptDirectory):
 	return modDir
 
 def mapDependencyForNA(commandArg,k):
-	depIndv = input("The command argument " + commandArg[k] + " has NA argument values? Does it take additional arguments?(Y/N): ")
-	if depIndv.upper() == 'Y':
-		for i,j in enumerate(commandArg):
-			print(str(i) + '. ' + j)
-		addArg = input("Select the argument from the above list that the " + commandArg[k] + " takes as an additional input.(You can tag multiple arguments by passing them with a comma(,)): ")
+	devIndv = (input("The command argument " + commandArg[k] + " has NA argument values? Does it take additional mandatory/optional arguments?(Y/N): ")).upper()
+	depMandCommand = None
+	depOptCommand = None
+	while devIndv == 'Y':
+		print('inside while loop')
+		try:
+			if devIndv.upper() == 'Y':
+				for i,j in enumerate(commandArg):
+					print(str(i) + '. ' + j)
+				specifyMandOpt = input("(M)andatory/(O)ptional?: ")
+				if specifyMandOpt.upper() == 'M':
+					addMandArg = input("Select the arguments from the above list that the " + commandArg[k] + " takes as an additional(mandatory) input.(You can tag multiple arguments by passing them with a comma(,)): ").split(',')
+					depMandCommand = [int (i) for i in addMandArg]
+					print(depMandCommand)
+				elif specifyMandOpt.upper() == 'O':
+					addOptArg = input("Select the arguments from the above list that the " + commandArg[k] + " takes as an additional(optional) input.(You can tag multiple arguments by passing them with a comma(,)): ").split(',')
+					depOptCommand = [int (i) for i in addOptArg]
+				else:
+					print("Please chose correct option")
+			else:
+				break
+		except TypeError:
+			print("Wrong Input. Try again")
+		else:
+			devIndv = input("The command argument " + commandArg[k] + " has NA argument values? Does it take additional mandatory/optional arguments?(Y/N): ")
+			devIndv = devIndv.upper()
+
+	return depMandCommand, depOptCommand
+
+def modifyXMLSource(commandScript, depCommand, commandArg,i):
+	tree = parseXMLScript(commandScript)
+	root = tree.getroot()
+	childtag = 'dependantArg'
+	for commands in root.iter('parameter'):
+		tag = commands.tag
+		text = commands.text
+		if text == commandArg[i]:
+			for j in depCommand:
+				grandchild2 = ET.SubElement(commands,childtag)
+				grandchild2.text = commandArg[j]
 	
+	os.remove(commandScript)			
+	tree.write(commandScript)			
 
 class modifyXMLScripts(object):
 	def __init__(self, dirName,optionSelected):
 		self.dirName = dirName
 
-	def addArgsBehaviour(self,commandScript):
-		self.rootElement = parseXMLScript(commandScript)
+	def addArgsBehaviour(self,commandScript,modXMLDir):
+		self.tree = parseXMLScript(commandScript)
+		self.rootElement = self.tree.getroot()
 		self.commandArg = []
 		self.commandArgVal = []
+		self.modXMLDir = modXMLDir
+		for command in self.rootElement.iter('commandName'):
+			commandName = command.text
+		print(commandName)
 		self.dictionaryOfCommands = {}
 		for child in self.rootElement.iter('parameter'):
 			self.commandArg.append(child.text)
@@ -59,8 +101,10 @@ class modifyXMLScripts(object):
 		else:
 			for i in range(lenCommands):
 				if self.commandArgVal[i] == 'NA':
-					mapDependencyForNA(self.commandArg,i)
-
+					depMandCommand, depOptCommand = mapDependencyForNA(self.commandArg,i)
+					if depMandCommand is not None:
+						#print(self.commandArg[depCommand])
+						modifyXMLSource(commandScript, depMandCommand, self.commandArg,i)
 
 
 
@@ -89,15 +133,17 @@ class processSoftwarePackageXMLs(object):
 		self.modifiedXMLScriptsDirectory = createModifyXMLScriptDirectory(self.dirName)
 		print("Command Scripts found inside the package folder: ")
 		dictionaryOfCommands = {}
+		fileDictionary = {}
 		for dirpath, dirnames, filenames in os.walk(self.dirName):
 			index=1
 			for files in filenames:
 				if files.endswith(".xml"):
-					print(str(index) + ". " + files)
+					fileDictionary[index] = files
 					dictionaryOfCommands[index] = os.path.join(dirName,files)
 					index = index + 1
 		commandIndexFrom = 0
 		commandIndexTo = []
+		print(fileDictionary)
 		while True:
 			try:
 				option = input("How do you wish to go about it? (E)xport/(I)mport data from output logs of one command to others? Or define command argument (B)ehaviour?:  ")
@@ -118,14 +164,23 @@ class processSoftwarePackageXMLs(object):
 					genericOrSpecific = input("Okay. Do you wish to define any (G)eneric command argument behaviour in all of the commands, or any (S)pecific command in particular: ")
 					if genericOrSpecific.upper() == 'S':
 						commandIndexOf = int(input("Enter the command serial from the above list that you wish to define argument dependencies on: "))
-						modifiedScript.addArgsBehaviour(dictionaryOfCommands[commandIndexOf])
+						modifiedScript.addArgsBehaviour(dictionaryOfCommands[commandIndexOf],self.modifiedXMLScriptsDirectory)
+						cont = input("Do you wish to continue with another suit of mapping(Y/N)?")
+						if cont.upper() == 'N':
+							break
+						else:
+							print("List of command scripts: ")
+							print(fileDictionary)
+							continue
 					elif genericOrSpecific.upper() == 'G':
 						print("Generic Search of command suits for similar arguments.")
-					cont = input("Do you wish to continue with another suit of mapping(Y/N)?")
-					if cont.upper() == 'N':
-						break
-					else:
-						continue
+						if cont.upper() == 'N':
+							break
+						else:
+							print("List of command scripts: ")
+							print(fileDictionary)
+							continue
+					
 			except ValueError:
 				print("That is not a valid number. ")
 			else:
@@ -133,3 +188,8 @@ class processSoftwarePackageXMLs(object):
 
 			
 #		modifyXMLScripts(dictionaryOfCommands, dirName, commandIndexFrom, commandIndexTo)
+
+
+
+
+
