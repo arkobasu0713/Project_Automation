@@ -78,7 +78,7 @@ if __name__ == "__main__":
 				#DM.processSoftwarePackageXMLs(XMLScriptsDir)
 				DM2.processSoftwarePackageXMLs(XMLScriptsDir)
 			else:
-				print("Test Suit trigger.")	
+				print("Test Suit trigger.")
 		else:
 			print("No compiled sources discovered. Test Suit is checking the sampleFiles folder for any default schema available.")
 			ListOfXMLDataSource = LookForDataSource()

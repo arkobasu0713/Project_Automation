@@ -30,43 +30,161 @@ def parseXMLScript(commandScript):
 		print("Malicious corrupted XML File. Please generate the XML file again")
 	return tree
 
-class modifyTree():
-	def __init__(self,tree):
-		self.tree = tree
-		self.root = self.tree.getroot()
-		self.grandChildMandTag = 'additionalMandDependantArgument'
-		self.grandChildOptTag = 'additionalOptDependantArgument'
-
-	def modifyAdditionalMandatoryGrandChild(self, commandArgList,modifyCommandArg, depMandCommand):
-		newNode = ET.SubElement(self.root[modifyCommandArg],self.grandChildMandTag)
-		for i in depMandCommand:
-			newNode.append(commandArgList[i])
-		#write the file or return the corrected tree
-		
-		
-	def modifyAdditionalOptionalGrandChild(self, commandArgList,modifyCommandArg, depMandCommand):
-		newNode = ET.SubElement(self.root[modifyCommandArg],self.grandChildOptTag)
-		for i in depMandCommand:
-			newNode.append(commandArgList[i])
-		#write the file or return the corrected tree
-
-
-def printArg(listOfArg):
+def printList(listOfArg):
 	index = 0
 	for i in listOfArg:
 		text = i.text
 		print(str(index) + ". " + text)
 		index = index +1
 
-def printArgsWithNAValues(listOfCommandArg, listOfIndexOfCommandsWithNAValues):
-		print("Command Arguments with NA Values: ")		
-		for val in listOfIndexOfCommandsWithNAValues:
-			print(str(val) + ". " + str(listOfCommandArg[val].text))
+def printArgsBasedOnIndex(listOfCommandArg, listOfIndex):
+	for val in listOfIndex:
+		print(str(val) + ". " + str(listOfCommandArg[val].text))
+
+def verifyArgumentsAndTheirValuesLength(listOfCommandArg, listOfCommandArgValues):
+	"""check for XML data integrity"""
+	if not (len(listOfCommandArg)) == (len(listOfCommandArgValues)):
+		print("Verify the XML Source. The number of command arguments and their values don't match.")
+		return 1
+	return 0
 
 
 def printBehaviourMappingTechnique():
 	print("Please note the heirarchy of the behaviour mapping. Start with the lowest order of mapping.")
 
+def processCommandsWithNAValues(listOfCommandArg, listOfIndexOfCommandsWithNAValues,commandTree):
+	print("In procedure for mapping commands with NA Values.")
+	define = 'Y'
+	while define == 'Y':		
+		modTree = modifyTree(commandTree, listOfCommandArg)
+		try:
+			print("Command Arguments with NA Values: ")
+			printArgsBasedOnIndex(listOfCommandArg,listOfIndexOfCommandsWithNAValues)
+			doesAdditionalArgument = (input("Does any of the command arguments from the above list take in additional parameters?(y/n): ")).upper()
+			if doesAdditionalArgument == 'Y':
+				printBehaviourMappingTechnique()
+				index = int(input("Select the serial from the above list that you wish to proceed with: "))
+				additionalArg = (input("Does the argument " + listOfCommandArg[index].text + " take in additional arguments? (Y/N): ")).upper()
+				if additionalArg == 'Y':
+					mandOpt = (input("(M)andatory/(O)ptional? : ")).upper()
+					if mandOpt == 'M':
+						printList(listOfCommandArg)
+						depArg = (input("Select the commands that go along with " + listOfCommandArg[index].text + " as mandatory additional arguments. You can specify multiple commands by separating them with comma(,): ")).split(',')
+						depMandArg = [int (i) for i in depArg]
+						modTree.modifyAdditionalMandatoryGrandChild(index,depMandArg)
+					elif mandOpt == 'O':
+						printList(listOfCommandArg)
+						depArg = (input("Select the commands that go along with " + listOfCommandArg[index].text + " as optional additional arguments. You can specify multiple commands by separating them with comma(,): ")).split(',')
+						depOptArg = [int (i) for i in depArg]
+						modTree.modifyAdditionalOptionalGrandChild(index,depMandArg)
+					else:
+						print("Wrong option for kind of additional argument, selected. Try again.")
+						continue
+				elif additionalArg == 'N':
+					print("XML modification for " +listOfCommandArg[index].text + "not required.")
+					continue
+				else:
+					print("Wrong option. Please try again")
+					continue
+			elif doesAdditionalArgument =='N':
+				print("No additional arguments with NA values to map.")
+				define = 'N'
+			else:
+				print("Please select the correct option.")
+				continue
+		except ValueError:
+			print("Entered value is not a number. Please try again.")
+		else:
+			commandTree = modTree.tree
+			del modTree
+				
+	return commandTree
+
+def processCommandsWithNoneValues(listOfCommandArg, listOfIndex, commandTree):
+	print("In procedure for mapping command arguments with None Values.")
+	define = 'Y'
+	while define == 'Y':
+		modTree = modifyTree(commandTree, listOfCommandArg)
+		try:
+			print("Command Arguments with none values: ")
+			printArgsBasedOnIndex(listOfCommandArg, listOfIndex)
+			option = (input("Do you wish to proceed defining argument parameter values for any of the commands from the above list?(y/n): ")).upper()
+			if option == 'Y':
+				index = int(input("Select the serial from the above list that you wish to proceed with: "))
+				howTo = (input("Do you wish to (M)anually enter the values or tag other dependant commands that "+listOfCommandArg[index].text+" (I)mports the data from?: ")).upper()
+				if howTo == 'M':
+					manualEntry = input("Enter the values that you wish to pass on to the argument. PS: you can enter multiple values by separating them with a comma(,) : ")
+					modTree.modifyManualArgument(index,manualEntry)
+				elif howTo == 'I':
+					print("call function for tagging attributes to to the corresponding elements in the command tree")
+				else:
+					print("Chose the correct option")
+					continue
+
+			elif option == 'N':
+				print("Exiting procedure for defining any behaviour for arguments with no values.")
+				define = 'N'
+			else:
+				print("Please select the correct option.")
+				continue
+
+		except ValueError:
+			print("That is not a valid integer. Please try again.")
+		else:
+			print("No exceptions were raised.")
+			commandTree = modTree.tree
+			del modTree					
+	return commandTree
+
+def defineBehaviourOfCommand(commandScript):
+	treeForCommand = command(commandScript)
+	treeForCommand.getCommandArguments()
+	treeForCommand.getCommandArgumentsValues()
+	ret = verifyArgumentsAndTheirValuesLength(treeForCommand.listOfCommandArg, treeForCommand.listOfCommandArgValues)
+	if ret == 1:
+		return 1
+	treeForCommand.printCommandName()
+	treeForCommand.checkForNAValues()
+	if len(treeForCommand.listOfIndexOfCommandsWithNAValues) > 0 :
+		treeForCommand.commandTree = processCommandsWithNAValues(treeForCommand.listOfCommandArg,treeForCommand.listOfIndexOfCommandsWithNAValues,treeForCommand.commandTree)
+		#create the new XML file with the modified XML Tree structure with NA Mapping
+		treeForCommand.commandTree.write('/home/abasu/Documents/test.xml')
+	else:
+		print("No command argument with NA values were found in the script.")
+	treeForCommand.checkForNoArgValues()
+	if len(treeForCommand.listOfIndexOfCommandsWithNoneValue) > 0 :
+		treeForCommand.commandTree = processCommandsWithNoneValues(treeForCommand.listOfCommandArg,treeForCommand.listOfIndexOfCommandsWithNoneValue,treeForCommand.commandTree)
+		treeForCommand.commandTree.write('/home/abasu/Documents/test1.xml')
+	else:
+		print("No command argument with None values were found in the script.")
+	
+
+
+	return 0
+
+
+class modifyTree():
+	def __init__(self,tree, commandArgList):
+		self.tree = tree
+		self.root = self.tree.getroot()
+		self.listOfCommandArg = commandArgList
+		self.grandChildMandTag = 'additionalMandDependantArgument'
+		self.grandChildOptTag = 'additionalOptDependantArgument'
+
+	def modifyAdditionalMandatoryGrandChild(self,modifyCommandArg, depMandCommand):
+		newNode = ET.SubElement(self.root[modifyCommandArg],self.grandChildMandTag)
+		for i in depMandCommand:
+			newNode.append(self.listOfCommandArg[i])
+				
+	def modifyAdditionalOptionalGrandChild(self,modifyCommandArg, depMandCommand):
+		newNode = ET.SubElement(self.root[modifyCommandArg],self.grandChildOptTag)
+		for i in depMandCommand:
+			newNode.append(self.listOfCommandArg[i])
+
+	def modifyManualArgument(self, index, manualEntry):
+		for commandArgVal in self.root[index].iter('parametervalues'):
+			commandArgVal.text = manualEntry
+		
 
 class command():
 	def __init__(self,commandScript):
@@ -77,18 +195,15 @@ class command():
 		self.listOfCommandArg = []
 		self.listOfCommandArgValues = []
 		self.listOfIndexOfCommandsWithNAValues = []
+		self.listOfIndexOfCommandsWithNoneValue = []
+
 	def getCommandArguments(self):
-		for commandArg in self.root.iter('parameter'):
+		for commandArg in self.root:
 			self.listOfCommandArg.append(commandArg)
 
 	def getCommandArgumentsValues(self):
 		for commandArgVal in self.root.iter('parametervalues'):
 			self.listOfCommandArgValues.append(commandArgVal)
-
-	def verifyArgumentsAndTheirValuesLength(self):
-		"""check for XML data integrity"""
-		if not (len(self.listOfCommandArg)) == (len(self.listOfCommandArgValues)):
-			print("Verify the XML Source. The number of command arguments and their values don't match.")
 
 	def printCommandName(self):
 		print("Command: " + str(self.command))
@@ -98,62 +213,12 @@ class command():
 			if (self.listOfCommandArgValues[indVal].text) == 'NA':
 				self.listOfIndexOfCommandsWithNAValues.append(indVal)
 		
-	
-	def printRootBranch(self,branchNumber):
-		print("Printing branch " + str(branchNumber) + " :")
-		print(self.root[branchNumber].text)
-
-	def processCommandsWithNAValues(self):
-		print("In procedure for mapping commands with NA Values.")
-		modTree = modifyTree(self.commandTree)
-		define = 'Y'
-		while define == 'Y':		
-			try:
-				printArgsWithNAValues(self.listOfCommandArg,self.listOfIndexOfCommandsWithNAValues)
-				doesAdditionalArgument = (input("Does any of the command arguments from the above list take in additional parameters?(y/n): ")).upper()
-				if doesAdditionalArgument == 'Y':
-					printBehaviourMappingTechnique()
-					index = int(input("Select the serial from the above list that you wish to proceed with: "))
-					additionalArg = (input("Does the argument " + self.listOfCommandArg[index].text + " take in additional arguments? (Y/N): ")).upper()
-					if additionalArg == 'Y':
-						mandOpt = (input("(M)andatory/(O)ptional? : ")).upper()
-						if mandOpt == 'M':
-							printArg(self.listOfCommandArg)
-							depArg = (input("Select the commands that go along with " + self.listOfCommandArg[index].text + " as mandatory additional arguments. You can specify multiple commands by separating them with comma(,): ")).split(',')
-							depMandArg = [int (i) for i in depArg]
-							modTree.modifyAdditionalMandatoryGrandChild(self.listOfCommandArg,index,depMandArg)
-						elif mandOpt == 'O':
-							printArg(listOfCommandArg.listOfCommandArg)
-							depArg = (input("Select the commands that go along with " + self.listOfCommandArg[index].text + " as optional additional arguments. You can specify multiple commands by separating them with comma(,): ")).split(',')
-							depOptArg = [int (i) for i in depArg]
-							modTree.modifyAdditionalOptionalGrandChild(self.listOfCommandArg,index,depMandArg)
-						else:
-							print("Wrong option for kind of additional argument, selected. Try again.")
-							continue
-					
-					elif additionalArg == 'N':
-						print("XML modification not required.")
-						continue
-					else:
-						print("Wrong option. Please try again")
-						continue
-				elif doesAdditionalArgument =='N':
-					print("No additional arguments to map.")
-					define = 'N'
-				else:
-					print("Please select the correct option.")
-					continue
-				
-			except ValueError:
-				print("Entered value is not a number. Please try again.")
-			else:
-				print("No exception thrown.")
-				#modify the XML Tree
-#		createTheNewModifiedXMLFile()
-
-	
-
-
+	def checkForNoArgValues(self):
+		print("In procedure for checking arguments with no paramter values")
+		for indVal in range(len(self.listOfCommandArgValues)):
+			if (self.listOfCommandArgValues[indVal].text) == 'None':
+				self.listOfIndexOfCommandsWithNoneValue.append(indVal)
+		
 class processSoftwarePackageXMLs(object):
 	def __init__(self, dirName):
 		print("In procedure for dynamic mapping")
@@ -165,7 +230,7 @@ class processSoftwarePackageXMLs(object):
 		while option != 'X':
 			try:
 				print(self.fileDictionary)
-				option = (input("How do you wish to go about it? (E)xport/(I)mport data from output logs of one command to others? Or define any specific command argument (B)ehaviour? Type (X) to exit: ")).upper()
+				option = (input("How do you wish to go about it? (E)xport/(I)mport data from output logs from commands? Or define any specific command argument (B)ehaviour? Type (X) to exit: ")).upper()
 				if option == 'E':
 					print("Under Development")
 				
@@ -174,17 +239,9 @@ class processSoftwarePackageXMLs(object):
 
 				elif option == 'B':
 					commandIndexOf = int(input("Enter the command serial from the above list that you wish to define argument dependencies on: "))
-					treeForCommand = command(self.dictionaryOfCommandsScriptAbsolutePath[commandIndexOf])
-					treeForCommand.getCommandArguments()
-					treeForCommand.getCommandArgumentsValues()
-					treeForCommand.verifyArgumentsAndTheirValuesLength()
-					treeForCommand.printCommandName()
-					treeForCommand.checkForNAValues()
-#					printArg(treeForCommand.listOfCommandArg)
-					if len(treeForCommand.listOfIndexOfCommandsWithNAValues) > 0 :
-						treeForCommand.processCommandsWithNAValues()
-					else:
-						print("No command argument with NA values were found in the script.")
+					ret = defineBehaviourOfCommand(self.dictionaryOfCommandsScriptAbsolutePath[commandIndexOf])
+					if ret == 1:
+						continue
 
 
 	
@@ -192,12 +249,11 @@ class processSoftwarePackageXMLs(object):
 					break
 				else:
 					print("Wrong option selected. Please chose again.")
-					option = (input("How do you wish to go about it? (E)xport/(I)mport data from output logs of one command to others? Or define command argument (B)ehaviour? Type (X) to exit: ")).upper() 				
-
+					continue
 			except ValueError:
 				print("That is not a valid number. ")
 			else:
-				cont = (input("Dynamic Mapping procedure Ended. Do you wish to continue with Dynamic mapping?(y/n): ")).upper()
+				cont = (input("Dynamic Mapping procedure ended. Do you wish to continue with Dynamic mapping?(y/n): ")).upper()
 				if cont == 'N':
 					print("Exiting Dynamic Mapping")
 					break
