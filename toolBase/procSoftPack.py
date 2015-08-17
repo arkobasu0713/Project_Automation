@@ -10,40 +10,73 @@ from xml.etree.ElementTree import Element, SubElement, tostring
 import xml.dom.minidom as MNDOM
 import subprocess
 
-def processXML(absPathForXMLFile,logFilePath):
-	tree = ETProc.parse(absPathForXMLFile)
-	command = tree.getroot()
-	print("Command: " + command.tag)
-	for arguments in command:
-		print(arguments.tag + ',' + arguments.text)
-		for argValues in arguments:
-			if str(argValues.tag) == 'None':
-				yOn = input("Parameter " + arguments.text + " has no values in the source. Would you like to modify the data source and put in some value for it? (y/n): ")
-				if yOn.upper() == 'Y':
-					value = input("Input the value here: ")
-					#modify the source XML file to add this value
-			else:
-				print(argValues.tag + ',' +argValues.text)
+def retreiveXMLFilesAndTheirAbsPath(XMLFolder):
+	files = {}
+	dictionaryOfAbsPathForXMLs = {}
+	for dirpath, dirnames, filenames in os.walk(XMLFolder):
+		index=1
+		for filename in filenames:
+			if filename.endswith(".xml"):
+				files[index] = filename
+				dictionaryOfAbsPathForXMLs[index] = os.path.join(XMLFolder,filename)
+				index = index + 1
+
+	return files, dictionaryOfAbsPathForXMLs
+
+def parseXMLScript(commandScript):
+	"""This function parses the XML Script and returns the XML tree"""		
+	#Import the XML Script File
+	tree = ETProc.parse(commandScript)
+	if tree is not None:
+		print("Import Successful.")
+	else:
+		print("Malicious corrupted XML File. Please generate the XML file again")
+	return tree
+		
+
+class processCommandScript():
+	def __init__(self,fileName):
+		self.fileName = fileName
+		self.tree = parseXMLScript(self.fileName)
+		self.root = self.tree.getroot()
+		self.listOfArguments = []
+		self.listOfArgumentVal = []
+		print("Command Name: " + self.root.text)
+
+	def getArguments(self):
+		for commandArg in self.root:
+			self.listOfArguments.append(commandArg)
+
+	def getArgumentValues(self):
+		for commandArgVal in self.listOfArguments:
+			for val in commandArgVal.iter('parametervalues'):
+				self.listOfArgumentVal.append(val)
+				break
+
+		
 
 class processSoftwarePackage(object):
-	"""This is the function which processes the individial XMLs and runs them agains the system specific CLI and logs the output.
-	It also has the utility of mapping dependencies. creating multiple tupples of parameters that are passed in to the command's run, 
-	and also modify them dynamically"""
-	def __init__(self,softwarePackageFolder,LogFilePath,rootFileElementTag):
-		self.rootElementTag = rootFileElementTag
-		self.packageFolder = softwarePackageFolder
-		self.logFilePath = LogFilePath
-		xmlPathInsideSoftwarePackage = os.path.join(self.packageFolder,'XMLScripts')
-		dictionaryOfAbsPathForXMLs = {}
-		print("Command Scripts found inside the package folder: ")
-		for dirpath, dirnames, filenames in os.walk(xmlPathInsideSoftwarePackage):
-			index=1
-			for files in filenames:
-				if files.endswith(".xml"):
-					print(str(index) + ". " + files)
-					dictionaryOfAbsPathForXMLs[index] = os.path.join(xmlPathInsideSoftwarePackage,files)
-					index = index + 1
+	"""This is the function which processes the individial XMLs and runs them agains the system specific CLI and logs the output."""
+	def __init__(self,softwarePackageName,softwarePackageXMLFolder,logFilePath):
+		self.packageName = softwarePackageName
+		self.XMLFolder = softwarePackageXMLFolder
+		self.logFilePath = logFilePath
+		self.files, self.dictionaryOfAbsPathForXMLs = retreiveXMLFilesAndTheirAbsPath(self.XMLFolder)
 		
-		serialNumCommand = int(input("Please type in the serial number of the command that you'd wish to run: "))
-		processXML(dictionaryOfAbsPathForXMLs[serialNumCommand],self.logFilePath)
+		if len(self.files) > 0:
+			print("Command scripts found in the directory: ")
+			print(self.files)
+		while True:
+			try:
+				serial = int(input("Select the serial number of the command that you wish to run the test suit for, from the above list. Enter a higher serial number to exit. "))
+				break
+			except ValueError:
+				print("This is not a valid number. Try again.")
+				print(self.files)
 
+		if serial > len(self.files) :
+			print("No such command. Hence Exit.")
+		else:
+			procCommandScrpt = processCommandScript(self.dictionaryOfAbsPathForXMLs[serial])
+			procCommandScrpt.getArguments()
+			procCommandScrpt.getArgumentValues()

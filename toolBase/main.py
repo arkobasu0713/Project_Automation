@@ -33,7 +33,7 @@ def CreateDirectoryForSoftwarePackage(softwarePackageName):
 		os.mkdir(XMLScriptDirectory)
 		print("Directory for XML scripts for corresponding software package, generated at: " + XMLScriptDirectory)
 	else:
-		print("Directory for software package already exists.")
+		print("Directory for software package already exists. SHould you wish to generate separate XML Scripts from a data source for an already compiled software package, please remove the subdirectory for the package from the processed files directory and then try again.")
 	return dirName, XMLScriptDirectory
 
 def GenerateScriptForCommandNameInSoftwarePackageFolder(XMLScriptDirectory,commandName):
@@ -89,21 +89,22 @@ class ImportXMLSampleSource(object):
 		#Validate if file exists
 		if os.path.isfile(self.fileName):
 			print("File exists at specified location.")
+			print("Processing sample data source: " + self.fileName)
 		else:
 			print("File location invalid. Please try the absolute filepath of the data source")
 		
 		self.root = ProcessXMLTree(self.fileName)
-		
 
-class CreateWorkFiles(object):
-	"""This Function processes the XML tree and creates separate card/XML files for each of the command suits"""
-	def __init__(self, root):
-		self.root = root
+		print("Software Package detected in sample XML Source: " + self.root.tag)
 		self.dirName, self.XMLScriptDirectory = CreateDirectoryForSoftwarePackage(self.root.tag)
+		CreateIndividualFilesForRootElement(self.root, self.dirName, self.XMLScriptDirectory)
+		print("At this point, the input data source has been processed and the correspoding individual XML scripts have been generated in " + self.XMLScriptDirectory)
+		print("Please verify the XML files in the above mentioned folder.")
 
-		num = 0
-		for index in range(0,((len(self.root)-1)+1)):
-			ProcessElement(self.root[index], self.dirName, self.XMLScriptDirectory)
+def CreateIndividualFilesForRootElement(rootElement,dirName,XMLScriptDirectory):
+	"""This Function processes the XML tree and creates separate card/XML files for each of the command suits"""
+	for index in range((len(rootElement)-1)+1):
+		ProcessElement(rootElement[index], dirName, XMLScriptDirectory)
 
 		
 

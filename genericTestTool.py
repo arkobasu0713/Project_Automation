@@ -4,7 +4,7 @@
 #Copyright: HGST Inc.
 #Description: Generic Automated Tool
 
-from toolBase import ImportXMLSampleSource, CreateWorkFiles
+from toolBase import ImportXMLSampleSource
 from toolBase import procSoftPack as PSP
 from toolBase import dynamicMapping as DM
 from toolBase import dynamicMapping2 as DM2
@@ -15,11 +15,10 @@ import time
 from xml.etree.ElementTree import Element, SubElement, tostring
 
 def ProcessXMLDataSource(xmlDataSource):
-	File = ImportXMLSampleSource(xmlDataSource)
-	print("Software Package detected in sample XML Source: " + File.root.tag)
-	softwarePackageFolder = CreateWorkFiles(File.root)
-	print("At this point, the input data source has been processed and the correspoding files have been generated in " + softwarePackageFolder.dirName)
-	print("Please verify the XML files in the above mentioned folder.")
+	importedSoftPackg = ImportXMLSampleSource(xmlDataSource)
+	
+	return importedSoftPackg
+	"""
 	yOrNDynamicMapping = input("Do you wish to tag/add dynamic mapping to the software package commands and modify the XML suits? (y/n)[Please note that this is a one time setup]: ")
 	if yOrNDynamicMapping.upper() == 'Y':
 		print("Going into dynamic mapping procedure 2.")
@@ -27,7 +26,7 @@ def ProcessXMLDataSource(xmlDataSource):
 		DM2.processSoftwarePackageXMLs(softwarePackageFolder.XMLScriptDirectory)
 		#dynamic mapping procedure
 	return File
-
+"""
 def XMLDirectoryForSoftwarePackage(softwarePackageDirectory):
 	"""This function returns the XML Script directory under the software package"""
 	dirName = os.path.join(softwarePackageDirectory, 'OriginalXMLScripts')
@@ -49,70 +48,79 @@ if __name__ == "__main__":
 	
 	parser = argparse.ArgumentParser(description="Generic Automated System test tool")
 	parser.add_argument('-d','--dataSource', dest='XMLFileName', help='absolute path for the sample XML data source. If this is not provided, the System proceeds with any already compiled test source that it may find in the working directory. If it does not find that too as well, then it looks for the sampleFiles for any default schema that is stored there.')
-	parser.add_argument('-cL','--createLogs', dest='LogFilePath', help='absolute path for the generation of log files. If this is not provided, the System creates the log files in the /workFiles/processedFiles/"SoftwarePackageName"/LogFiles/"CurrentDateTime"')
+	parser.add_argument('-cL','--createLogs', dest='logFilePath', help='absolute path for the generation of log files. If this is not provided, the System creates the log files in the /workFiles/processedFiles/"SoftwarePackageName"/LogFiles/"CurrentDateTime"')
 	args = parser.parse_args()
-	xmlDataSource = args.XMLFileName
-	LogFilePath = args.LogFilePath
+	inputDataSource = args.XMLFileName
+	logFilePath = args.logFilePath
+
+	xmlDataSource = ''
+	dictionaryOfSoftwarePackages = {}
+	dictOfPackages = {}
+
+	if inputDataSource is not None:
+		xmlDataSource = inputDataSource
+	else:
+		print("No input XML Data source provided in command arguments discovered. Test Suit is checking the sample XML Files folder for any default schema available.")
+		listOfXMLDataSource = LookForDataSource()
+		if len(listOfXMLDataSource) > 0:
+			print("The Sample XML Data sources found in the directory are: ")
+			print(list(enumerate(listOfXMLDataSource)))
+			while True:
+				try:
+					yesOrNo = (input("Do you wish to proceed with any of the above data sources? (Y/N) : ")).upper()
+					if yesOrNo == 'Y':
+						sourceNum = int(input("Enter the serial number from the above list, of which one do you wish to proceed with? : "))
+						xmlDataSource = listOfXMLDataSource[sourceNum]
+						break
+					elif yesOrNo == 'N':
+						print("Ok. No XML Import to be performed.")
+						break
+				except ValueError:
+					print("Oops! That's not a number. Try Again... ")
+				else:
+					print("Please enter correct option again.")
+		else:
+			print("No sample XML data source found. This is crazy. I don't have anything to work with. Sorry. I'm done.")
+			sys.exit(0)
+
+	if xmlDataSource != '':
+		importSoftPackg = ProcessXMLDataSource(xmlDataSource)
+		
 	softwarePackagesStoredInFolderName = os.path.join(os.path.dirname(os.path.realpath(__file__)),'workFiles','processedFiles')
 	dirname = os.listdir(softwarePackagesStoredInFolderName)
-	rootFileElement = None
-	dictionaryOfSoftwarePackages = {}
-	if xmlDataSource is None:
-		print("Going into compiled software package directory.")		
-		#Go to workFiles/CompiledXMLSources
 
-		num = 1
-
+	print("Checking source directory for compiled software packages.")		
+	while True:
 		if len(dirname) > 0:
-			print("Compiled sources for the following software packages are found: ")			
+			num = 1
 			for indvdir in dirname:
-				pathForPackage = os.path.join(softwarePackagesStoredInFolderName,indvdir)
-				dictionaryOfSoftwarePackages[num] = pathForPackage
-				print(str(num) + ". " + indvdir)
+				dictOfPackages[num] = indvdir
+				dictionaryOfSoftwarePackages[num] = os.path.join(softwarePackagesStoredInFolderName,indvdir)
 				num = num + 1
-			option = int(input("select the software package that you wish to work with, from the above list: "))
-			XMLScriptsDir = XMLDirectoryForSoftwarePackage(dictionaryOfSoftwarePackages[option])
-			dynamicMap = (input("Do you wish to add dynamic mapping command arguments(y/n)?")).upper()
-			if dynamicMap == 'Y':
-				print("Going into dynamic mapping procedure 2.")
-				#DM.processSoftwarePackageXMLs(XMLScriptsDir)
+			print("---------------------------------------------------------------------------------------------------------")
+			print("Compiled software packages found in source directory: ")
+			print(dictOfPackages)
+			print("---------------------------------------------------------------------------------------------------------")
+			print("Okay. How do you wish to proceed?")
+			print("1. Add dynamic mapping for compiled software packages.")
+			print("2. Automated test suit trigger for compiled software packages.")
+			print("3. To exit the framework")
+			option = int(input("Please chose from the above options on how you wish to proceed: "))
+			if option > 3:
+				print("Wrong Option selected. Try again.")
+			if option == 3:
+				print("Exiting framework.")
+				break
+			if option == 1:
+				serial = int(input("Select the serial number from the above listed software package, for which you wish to perform dynamic mapping: "))
+				XMLScriptsDir = XMLDirectoryForSoftwarePackage(dictionaryOfSoftwarePackages[serial])
 				DM2.processSoftwarePackageXMLs(XMLScriptsDir)
-			else:
-				print("Test Suit trigger.")
+			if option == 2:
+				serial = int(input("Select the serial number from the above listed software package, for which you wish to perform dynamic mapping: "))
+				XMLScriptsDir = XMLDirectoryForSoftwarePackage(dictionaryOfSoftwarePackages[serial])	
+				PSP.processSoftwarePackage(dictOfPackages[serial],XMLScriptsDir,logFilePath)
 		else:
-			print("No compiled sources discovered. Test Suit is checking the sampleFiles folder for any default schema available.")
-			ListOfXMLDataSource = LookForDataSource()
-			indexSource = 1
-			if len(ListOfXMLDataSource) > 0:
-				print("The Sample XML Data sources found in the directory are: ")
-				for dataSource in ListOfXMLDataSource:
-					print(str(indexSource) + ". " + dataSource)
-					indexSource = indexSource + 1
-				while True:
-					try:
-						yesOrNo = input("Do you wish to proceed with any of the above data sources? (Y/N) : ")
-						if yesOrNo.upper() == 'Y':
-							sourceNum = int(input("Enter the serial number from the above list, of which one do you wish to proceed with? : "))
-							break
-						elif yesOrNo.upper() == 'N':
-							print("Ok. Bye. I'm done.")
-							break
-					except ValueError:
-						print("Oops! That's not a number. Try Again... ")
-					else:
-						print("Please enter correct option again.")
-				print("The sample data source being used for processing is: " + ListOfXMLDataSource[sourceNum-1])
-				xmlDataSource = ListOfXMLDataSource[sourceNum-1]
-				rootFileElement = ProcessXMLDataSource(xmlDataSource)
-			else:
-				print("No sample XML data source found. This is crazy. I don't have anything to work with. Sorry. I'm done.")
-				sys.exit(0)
-		
-	else:
-		rootFileElement = ProcessXMLDataSource(xmlDataSource)
+			print("No compiled software packages were found. Please try processing a XML data source from the beginning.")
+			break
 
-	#Proceed with the software package processing XMLs
-	"""if len(dictionaryOfSoftwarePackages) > 0:
-		selectionOfSoftwarePackage = int(input("Please input the serial number for the software package that you wish to run the test suit for: "))
-		PSP.processSoftwarePackage(dictionaryOfSoftwarePackages[selectionOfSoftwarePackage],LogFilePath,rootFileElement)
-"""
+

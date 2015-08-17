@@ -41,13 +41,6 @@ def printArgsBasedOnIndex(listOfCommandArg, listOfIndex):
 	for val in listOfIndex:
 		print(str(val) + ". " + str(listOfCommandArg[val].text))
 
-def verifyArgumentsAndTheirValuesLength(listOfCommandArg, listOfCommandArgValues):
-	"""check for XML data integrity"""
-	if not (len(listOfCommandArg)) == (len(listOfCommandArgValues)):
-		print("Verify the XML Source. The number of command arguments and their values don't match.")
-		return 1
-	return 0
-
 
 def printBehaviourMappingTechnique():
 	print("Please note the heirarchy of the behaviour mapping. Start with the lowest order of mapping.")
@@ -100,6 +93,10 @@ def processCommandsWithNAValues(listOfCommandArg, listOfIndexOfCommandsWithNAVal
 				
 	return commandTree
 
+def writeFile(pathForFile,modifiedTree):
+	os.remove(pathForFile)
+	modifiedTree.write(pathForFile)
+
 def processCommandsWithNoneValues(listOfCommandArg, listOfIndex, commandTree):
 	print("In procedure for mapping command arguments with None Values.")
 	define = 'Y'
@@ -140,27 +137,21 @@ def defineBehaviourOfCommand(commandScript):
 	treeForCommand = command(commandScript)
 	treeForCommand.getCommandArguments()
 	treeForCommand.getCommandArgumentsValues()
-	ret = verifyArgumentsAndTheirValuesLength(treeForCommand.listOfCommandArg, treeForCommand.listOfCommandArgValues)
-	if ret == 1:
-		return 1
 	treeForCommand.printCommandName()
 	treeForCommand.checkForNAValues()
 	if len(treeForCommand.listOfIndexOfCommandsWithNAValues) > 0 :
 		treeForCommand.commandTree = processCommandsWithNAValues(treeForCommand.listOfCommandArg,treeForCommand.listOfIndexOfCommandsWithNAValues,treeForCommand.commandTree)
-		#create the new XML file with the modified XML Tree structure with NA Mapping
-		treeForCommand.commandTree.write('/home/abasu/Documents/test.xml')
 	else:
 		print("No command argument with NA values were found in the script.")
 	treeForCommand.checkForNoArgValues()
 	if len(treeForCommand.listOfIndexOfCommandsWithNoneValue) > 0 :
 		treeForCommand.commandTree = processCommandsWithNoneValues(treeForCommand.listOfCommandArg,treeForCommand.listOfIndexOfCommandsWithNoneValue,treeForCommand.commandTree)
-		treeForCommand.commandTree.write('/home/abasu/Documents/test1.xml')
 	else:
 		print("No command argument with None values were found in the script.")
 	
 
 
-	return 0
+	return treeForCommand.commandTree
 
 
 class modifyTree():
@@ -202,8 +193,10 @@ class command():
 			self.listOfCommandArg.append(commandArg)
 
 	def getCommandArgumentsValues(self):
-		for commandArgVal in self.root.iter('parametervalues'):
-			self.listOfCommandArgValues.append(commandArgVal)
+		for commandArg in self.listOfCommandArg:
+			for commandArgVal in commandArg.iter('parametervalues'):
+				self.listOfCommandArgValues.append(commandArgVal)
+				break
 
 	def printCommandName(self):
 		print("Command: " + str(self.command))
@@ -239,11 +232,9 @@ class processSoftwarePackageXMLs(object):
 
 				elif option == 'B':
 					commandIndexOf = int(input("Enter the command serial from the above list that you wish to define argument dependencies on: "))
-					ret = defineBehaviourOfCommand(self.dictionaryOfCommandsScriptAbsolutePath[commandIndexOf])
-					if ret == 1:
-						continue
-
-
+					modifiedTree = defineBehaviourOfCommand(self.dictionaryOfCommandsScriptAbsolutePath[commandIndexOf])
+					if modifiedTree is not None:
+						writeFile(self.dictionaryOfCommandsScriptAbsolutePath[commandIndexOf], modifiedTree)
 	
 				elif option == 'X':
 					break
