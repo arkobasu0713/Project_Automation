@@ -162,15 +162,30 @@ class modifyTree():
 		self.grandChildMandTag = 'additionalMandDependantArgument'
 		self.grandChildOptTag = 'additionalOptDependantArgument'
 
+#	def modifyAdditionalMandatoryGrandChild(self,modifyCommandArg, depMandCommand):
+#		newNode = ET.SubElement(self.root[modifyCommandArg],self.grandChildMandTag)
+#		for i in depMandCommand:
+#			newNode.append(self.listOfCommandArg[i])
+
+
 	def modifyAdditionalMandatoryGrandChild(self,modifyCommandArg, depMandCommand):
-		newNode = ET.SubElement(self.root[modifyCommandArg],self.grandChildMandTag)
-		for i in depMandCommand:
-			newNode.append(self.listOfCommandArg[i])
+		if self.root[modifyCommandArg].find(self.grandChildMandTag) is None:
+			newNode = ET.SubElement(self.root[modifyCommandArg],self.grandChildMandTag)
+			for i in depMandCommand:
+				newNode.append(self.listOfCommandArg[i])
+		else:
+			for i in depMandCommand:
+				(self.root[modifyCommandArg].find(self.grandChildMandTag)).append(self.listOfCommandArg[i])
+	
 				
 	def modifyAdditionalOptionalGrandChild(self,modifyCommandArg, depMandCommand):
-		newNode = ET.SubElement(self.root[modifyCommandArg],self.grandChildOptTag)
-		for i in depMandCommand:
-			newNode.append(self.listOfCommandArg[i])
+		if self.root[modifyCommandArg].find(self.grandChildOptTag) is None:
+			newNode = ET.SubElement(self.root[modifyCommandArg],self.grandChildOptTag)
+			for i in depMandCommand:
+				newNode.append(self.listOfCommandArg[i])
+		else:
+			for i in depMandCommand:
+				(self.root[modifyCommandArg].find(self.grandChildOptTag)).append(self.listOfCommandArg[i])
 
 	def modifyManualArgument(self, index, manualEntry):
 		for commandArgVal in self.root[index].iter('parametervalues'):
