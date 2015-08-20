@@ -6,33 +6,13 @@
 
 from toolBase import ImportXMLSampleSource
 from toolBase import procSoftPack as PSP
-from toolBase import dynamicMapping as DM
 from toolBase import dynamicMapping2 as DM2
 import argparse
 import sys
 import os
 import time
 from xml.etree.ElementTree import Element, SubElement, tostring
-
-def ProcessXMLDataSource(xmlDataSource):
-	importedSoftPackg = ImportXMLSampleSource(xmlDataSource)
-	
-	return importedSoftPackg
-	"""
-	yOrNDynamicMapping = input("Do you wish to tag/add dynamic mapping to the software package commands and modify the XML suits? (y/n)[Please note that this is a one time setup]: ")
-	if yOrNDynamicMapping.upper() == 'Y':
-		print("Going into dynamic mapping procedure 2.")
-		#DM.processSoftwarePackageXMLs(softwarePackageFolder.XMLScriptDirectory)
-		DM2.processSoftwarePackageXMLs(softwarePackageFolder.XMLScriptDirectory)
-		#dynamic mapping procedure
-	return File
-"""
-def XMLDirectoryForSoftwarePackage(softwarePackageDirectory):
-	"""This function returns the XML Script directory under the software package"""
-	dirName = os.path.join(softwarePackageDirectory, 'OriginalXMLScripts')
-	if not os.path.exists(dirName):
-		print("Directory for software package not found. There is something wrong with the script buildup while processing the sample data source. Please start again.")
-	return dirName
+from toolBase import utils as UTIL
 
 def LookForDataSource():
 	filePath = os.path.join(os.path.dirname(__file__), 'workFiles','sampleFiles')
@@ -43,6 +23,20 @@ def LookForDataSource():
 				absFileLocation = os.path.join(filePath,files)
 				listOfFileNames.append(absFileLocation)
 	return listOfFileNames
+
+def ProcessXMLDataSource(xmlDataSource):
+	importedSoftPackg = ImportXMLSampleSource(xmlDataSource)
+	
+	return importedSoftPackg
+
+def XMLDirectoryForSoftwarePackage(softwarePackageDirectory):
+	"""This function returns the XML Script directory under the software package"""
+	dirName = os.path.join(softwarePackageDirectory, 'OriginalXMLScripts')
+	if not os.path.exists(dirName):
+		print("Directory for software package not found. There is something wrong with the script buildup while processing the sample data source. Please start again.")
+	return dirName
+
+
 
 if __name__ == "__main__":
 	

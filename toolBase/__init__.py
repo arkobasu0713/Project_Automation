@@ -10,5 +10,5 @@ sys.path.append(six)
 
 from .main import ImportXMLSampleSource
 from .procSoftPack import processSoftwarePackage
-from .dynamicMapping import processSoftwarePackageXMLs
 from .dynamicMapping2 import processSoftwarePackageXMLs
+from . import utils as UTIL
