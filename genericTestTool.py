@@ -64,6 +64,7 @@ if __name__ == "__main__":
 					yesOrNo = (input("Do you wish to proceed with any of the above data sources? (Y/N) : ")).upper()
 					if yesOrNo == 'Y':
 						sourceNum = int(input("Enter the serial number from the above list, of which one do you wish to proceed with? : "))
+						#handle number entered for parsing source XML Script
 						xmlDataSource = listOfXMLDataSource[sourceNum]
 						break
 					elif yesOrNo == 'N':
