@@ -67,10 +67,9 @@ def processCommandsWithNoneValues(treeForCommand,fileDictionary,dictionaryOfAbsP
 	while define == 'Y':
 		modTree = modifyTree(treeForCommand.commandTree, treeForCommand.listOfCommandArg)
 		try:
-			print("Command Arguments with none values: ")
-		#	UTIL.printArgsBasedOnIndex(listOfCommandArg, listOfIndex)
+			print("Command Arguments with None Values: ")
 			UTIL.printArgsBasedOnIndex(treeForCommand.listOfCommandArg, treeForCommand.listOfIndexOfCommandsWithNoneValue)
-			option = (input("Do you wish to proceed defining argument behaviour for which the parameter values are found to be None for any of the commands from the above list?(y/n): ")).upper()
+			option = (input("Do you wish to proceed defining parameter values or their behaviour for which the parameter values are found to be None for any of the commands from the above list?(y/n): ")).upper()
 			if option == 'Y':
 				index = int(input("Select the serial from the above list that you wish to proceed with: "))
 				howTo = (input("Do you wish to (M)anually enter the values or tag other dependant commands that "+ treeForCommand.listOfCommandArg[index].text+" (I)mports the data from?: ")).upper()
@@ -80,7 +79,7 @@ def processCommandsWithNoneValues(treeForCommand,fileDictionary,dictionaryOfAbsP
 				elif howTo == 'I':
 					print(fileDictionary)
 					print("")
-					importIndex = int(input("Select the serial number of command from the above list that the command " + listOfCommandArg[index].text + " imports data from: "))
+					importIndex = int(input("Select the serial number of command from the above list that the command " + treeForCommand.listOfCommandArg[index].text + " imports data from: "))
 					modTree.modifyImportArgument(index,dictionaryOfAbsPath[importIndex])
 				else:
 					print("Chose the correct option")
@@ -249,7 +248,7 @@ class command():
 		for indVal in range(len(self.listOfCommandArgValues)):
 			if (self.listOfCommandArgValues[indVal].text) == 'None':
 				self.listOfIndexOfCommandsWithNoneValue.append(indVal)
-				self.dictOfCommandImportArg[self.listOfCommandArg[indVal]] = self.listOfCommandArgValues[indVal].attrib
+				self.dictOfCommandImportArg[self.listOfCommandArg[indVal].text] = self.listOfCommandArgValues[indVal].attrib
 		
 	def checkForDepArguments(self):
 		for commandArg in self.listOfCommandArg:

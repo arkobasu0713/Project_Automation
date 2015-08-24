@@ -31,11 +31,24 @@ def ProcessXMLDataSource(xmlDataSource):
 
 def XMLDirectoryForSoftwarePackage(softwarePackageDirectory):
 	"""This function returns the XML Script directory under the software package"""
-	dirName = os.path.join(softwarePackageDirectory, 'OriginalXMLScripts')
+	choiceDir = 0
+	for dirpath, dirnames, filenames in os.walk(softwarePackageDirectory):
+		for dirname in dirnames:
+			if 'XML' not in dirname:
+				dirnames.remove(dirname)
+				break
+		if len(dirnames) > 1:
+			print(list(enumerate(dirnames)))
+			choiceDir = int(input("There are more than one XML script directory in the software package as listed above. Enter the serial number for which one you wish to proceed with?: "))
+			XMLFolder = dirnames[choiceDir]
+			break
+		else:
+			XMLFolder = dirnames[0]
+			break
+	dirName = os.path.join(softwarePackageDirectory, XMLFolder)
 	if not os.path.exists(dirName):
-		print("Directory for software package not found. There is something wrong with the script buildup while processing the sample data source. Please start again.")
+		print("Directory for software package not found. There is something wrong with the script buildup while processing the sample data source. Please start by processing the sample XML data source.")
 	return dirName
-
 
 
 if __name__ == "__main__":
@@ -111,7 +124,7 @@ if __name__ == "__main__":
 				XMLScriptsDir = XMLDirectoryForSoftwarePackage(dictionaryOfSoftwarePackages[serial])
 				DM2.processSoftwarePackageXMLs(XMLScriptsDir)
 			if option == 2:
-				serial = int(input("Select the serial number from the above listed software package, for which you wish to perform dynamic mapping: "))
+				serial = int(input("Select the serial number from the above listed software package, for which you wish to run the test suit: "))
 				XMLScriptsDir = XMLDirectoryForSoftwarePackage(dictionaryOfSoftwarePackages[serial])	
 				PSP.processSoftwarePackage(dictOfPackages[serial],XMLScriptsDir,logFilePath)
 		else:

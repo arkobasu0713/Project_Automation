@@ -42,14 +42,24 @@ class processSoftwarePackage(object):
 			print("")
 		while True:
 			try:
-				serial = int(input("Select the serial number of the command that you wish to run the test suit for, from the above list. Enter a higher serial number to exit. "))
-				break
+				serial = [int(i) for i in (input("Select the serial number of the command that you wish to run the test suit for, from the above list. You can chose multiple serials by passing them using a semicolon(;):  ").split(';'))]
 			except ValueError:
 				print("This is not a valid number. Try again.")
 				print(self.files)
+			else:
+				indexSerial = 0
+				for serl in serial:
+					if serl > len(self.files) or serl < 1:
+						print("No such command serial " + str(serl) + ". Deleting Selection.")
+						del serial[indexSerial]
+					indexSerial = indexSerial + 1
+				break		
 
-		if serial > len(self.files) :
-			print("No such command. Hence Exit.")
-		else:
-			comdScrpt = UTIL.procXMLScrpt(self.dictionaryOfAbsPathForXMLs[serial])
-			UTIL.generateAndRunScripts(comdScrpt,self.outputLocation, self.packageName)
+
+
+
+		for ser in serial:
+			print("Running Script: " + self.files[ser])
+			comdScrpt = UTIL.procXMLScrpt(self.dictionaryOfAbsPathForXMLs[ser])
+#			UTIL.generateAndRunScripts(comdScrpt,self.outputLocation, self.packageName)
+				

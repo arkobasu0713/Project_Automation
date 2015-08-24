@@ -8,69 +8,35 @@ import re
 import xml.etree.ElementTree as ET
 from xml.etree.ElementTree import Element, SubElement, tostring
 import xml.dom.minidom as MNDOM
-
-def ProcessXMLTree(readXMLFile):
-	"""This Function processes the Input XML source and generates a list with all the commands and their corresponding argument values"""
-
-	#Import the XML Source File
-	tree = ET.parse(readXMLFile)
-	if tree is not None:
-		print("Import Successful.")
-	else:
-		print("Malicious corrupted XML File. Please generate the XML file again")
-
-	root = tree.getroot()
-	return root
-
-def CreateDirectoryForSoftwarePackage(softwarePackageName):
-	"""This function creates a folder for software package imported through data source in workFiles/processedFiles"""
-	dirName = os.path.join(os.path.dirname(__file__), '..', 'workFiles', 'processedFiles',softwarePackageName)
-	XMLScriptDirectory = ''
-	if not os.path.exists(dirName):
-		os.mkdir(dirName)
-		print("Directory for software package, " + softwarePackageName + " created at " + dirName)
-		XMLScriptDirectory = os.path.join(dirName,'OriginalXMLScripts')
-		os.mkdir(XMLScriptDirectory)
-		print("Directory for XML scripts for corresponding software package, generated at: " + XMLScriptDirectory)
-	else:
-		print("Directory for software package already exists. SHould you wish to generate separate XML Scripts from a data source for an already compiled software package, please remove the subdirectory for the package from the processed files directory and then try again.")
-	return dirName, XMLScriptDirectory
-
-def GenerateScriptForCommandNameInSoftwarePackageFolder(XMLScriptDirectory,commandName):
-	fileName = commandName + ".xml"
-	filePath = os.path.join(XMLScriptDirectory,fileName)
-	file = open(filePath, 'wb')
-	print("File " + filePath +" for command, " + commandName +" created")
-	return file
-
+from . import utils as UTIL
 
 def ProcessElement(element,dirName,XMLScriptDirectory):
-	childTag = 'parameter'
-	grandChildtag = 'parametervalues'
+	paramTag = 'parameter'
+	paramValTag = 'parametervalues'
 	for elementContent in element:
 		tag = elementContent.tag
 		text = elementContent.text
 		if 'commandName' in tag:
-			fileCreated = GenerateScriptForCommandNameInSoftwarePackageFolder(XMLScriptDirectory,text)
+			fileCreated = UTIL.GenerateScriptForCommandNameInSoftwarePackageFolder(XMLScriptDirectory,text)
 			parent = ET.Element(tag)
 			parent.text = text
 		elif 'param' in tag:
 			if 'Value' not in tag and text is not None:
 				paramValueTag = tag + "Value"
-				child = ET.SubElement(parent,childTag)
+				child = ET.SubElement(parent,paramTag)
 				child.text = text
 			elif paramValueTag in tag:
 				if text is not None:
 					if 'NA' in text :
 						#dependency mapping
-						grandChild = ET.SubElement(child,grandChildtag)
+						grandChild = ET.SubElement(child,paramValTag)
 						grandChild.text = "NA"
 					else:
-						grandChild = ET.SubElement(child,grandChildtag)
+						grandChild = ET.SubElement(child,paramValTag)
 						grandChild.text = text
 				else:
 					#dependency mapping
-					grandChild = ET.SubElement(child,grandChildtag)
+					grandChild = ET.SubElement(child,paramValTag)
 					grandChild.text = "None"
 
 	tree = ET.ElementTree(parent)
@@ -93,10 +59,11 @@ class ImportXMLSampleSource(object):
 		else:
 			print("File location invalid. Please try the absolute filepath of the data source")
 		
-		self.root = ProcessXMLTree(self.fileName)
+		self.tree = UTIL.parseXMLScript(self.fileName)
+		self.root = self.tree.getroot()
 
 		print("Software Package detected in sample XML Source: " + self.root.tag)
-		self.dirName, self.XMLScriptDirectory = CreateDirectoryForSoftwarePackage(self.root.tag)
+		self.dirName, self.XMLScriptDirectory = UTIL.CreateDirectoryForSoftwarePackage(self.root.tag)
 		CreateIndividualFilesForRootElement(self.root, self.dirName, self.XMLScriptDirectory)
 		print("At this point, the input data source has been processed and the correspoding individual XML scripts have been generated in " + self.XMLScriptDirectory)
 		print("Please verify the XML files in the above mentioned folder.")
