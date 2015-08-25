@@ -61,10 +61,8 @@ def parseXMLScript(commandScript):
 
 	#Import the XML Script File
 	tree = ETProc.parse(commandScript)
-	if tree is not None:
-		print("Import Successful.")
-	else:
-		print("Malicious corrupted XML File. Please generate the XML file again")
+	if tree is None:
+		print("Import UnSuccessful.")
 	return tree
 
 def printList(listOfArg):
@@ -116,8 +114,8 @@ def writeFile(pathForFile,modifiedTree):
 	os.remove(pathForFile)
 	modifiedTree.write(pathForFile)
 
-def procXMLScrpt(FileName):
-	procCommandScrpt = processCommandScript(FileName)
+def procXMLScrpt(FileName,packageName):
+	procCommandScrpt = processCommandScript(FileName,packageName)
 	procCommandScrpt.getArguments()
 	procCommandScrpt.getArgumentValues()
 	procCommandScrpt.processArguments()
@@ -132,12 +130,23 @@ def createOutputFile(commandName,outputLocation):
 
 	return file
 
+def RunScript(commandString):
+	p = subprocess.Popen(commandString,shell=True,stdout = subprocess.PIPE,stderr = subprocess.PIPE)
+	return p
+
+def runImportScript(commandScript,packageName):
+	procImpScript = processCommandScript(commandScript,packageName)
+	procImpScript.getArguments()
+	commandString = procImpScript.packageName + ' ' + procImpScript.commandName
+	p = RunScript(commandString)
+	return p
+
 def writeAndRun(outputFile,commandString):
 	outputFile.write(commandString)
 	outputFile.write("\n")
 #	print(commandString)
-	p = subprocess.Popen(commandString,shell=True,stdout = subprocess.PIPE,stderr = subprocess.PIPE)
-	output , err = p.communicate()
+	p = RunScript(commandString)
+	output, err = p.communicate()
 	if output.decode('ascii') == '':
 		outputFile.write(err.decode('ascii'))
 #		print(err.decode('ascii'))
@@ -166,10 +175,19 @@ def generateAndRunScripts(comdScrpt,outputLocation, packageName):
 
 	outputFile.close()
 
+def extractData(paramText,output):
+	print("Extracting.")
+	listOfData = []
+	for line in output.split(os.linesep):
+		if paramText.upper() in line.upper():
+			param = (line.split('='))[1].strip()
+			listOfData.append(param)
+	return listOfData
 
 class processCommandScript():
-	def __init__(self,fileName):
+	def __init__(self,fileName,packageName):
 		self.fileName = fileName
+		self.packageName = packageName
 		self.tree = parseXMLScript(self.fileName)
 		self.root = self.tree.getroot()
 		self.listOfArguments = []
@@ -201,6 +219,13 @@ class processCommandScript():
 			for subElem in element.iter('parametervalues'):
 				if subElem.text == 'None':
 					if subElem.attrib != {}:
+						print(subElem.get('importsFrom'))
+						p = runImportScript(subElem.get('importsFrom'),self.packageName)
+						output, err = p.communicate()
+						if output.decode('ascii') == '':
+							print('Import Command for ' + paramText + "Had a Run Error as followed: " + err.decode('ascii'))
+						else:
+							self.dictionaryOfArgumentsAndTheirValues[paramText] = extractData(paramText.strip('-'),output.decode('ascii'))
 						self.dictOfParamImport[paramText] = subElem.attrib
 						break
 				else:

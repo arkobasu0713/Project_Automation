@@ -60,6 +60,6 @@ class processSoftwarePackage(object):
 
 		for ser in serial:
 			print("Running Script: " + self.files[ser])
-			comdScrpt = UTIL.procXMLScrpt(self.dictionaryOfAbsPathForXMLs[ser])
-#			UTIL.generateAndRunScripts(comdScrpt,self.outputLocation, self.packageName)
+			comdScrpt = UTIL.procXMLScrpt(self.dictionaryOfAbsPathForXMLs[ser],self.packageName)
+			UTIL.generateAndRunScripts(comdScrpt,self.outputLocation, self.packageName)
 				
