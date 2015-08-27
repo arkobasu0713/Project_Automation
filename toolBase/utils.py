@@ -67,7 +67,7 @@ def parseXMLScript(commandScript):
 
 def printList(listOfArg):
 
-	"""This function simply prints a given list with serial numbers."""
+	"""This function simply prints the text of the XML elements inside the list with serial numbers."""
 
 	index = 0
 	for i in listOfArg:
@@ -82,9 +82,14 @@ def printArgsBasedOnIndex(listOfCommandArg, listOfIndex):
 	for val in listOfIndex:
 		printString = str(val) + ". " + str(listOfCommandArg[val].text)
 		for commandVal in listOfCommandArg[val].iter('parametervalues'):
-			if commandVal.attrib != {}:
-				printString = printString + " has mapped import dependency from script: " + str(commandVal.attrib) + " "
+			if commandVal.text not in ['None', 'NA']:
+				printString = printString + " Takes in values: " + commandVal.text
+			else:
+				break
+		for commandVal in listOfCommandArg[val].iter('importsFrom'):
+			printString = printString + " Has imports tag from command: " + commandVal.text + "."
 			break
+
 		for commandDep in listOfCommandArg[val].iter('additionalMandDependantArgument'):
 			printString = printString + " Has mandatory dependant argument elements."
 			break
@@ -166,17 +171,76 @@ def generateAndRunScripts(comdScrpt,outputLocation, packageName):
 		if isinstance(comdScrpt.dictionaryOfArgumentsAndTheirValues[elements],str):
 			modCommandString1 = modCommandString + ' ' + comdScrpt.dictionaryOfArgumentsAndTheirValues[elements]
 			writeAndRun(outputFile,modCommandString1)
-			del modCommandString
+			del modCommandString1
 		elif isinstance(comdScrpt.dictionaryOfArgumentsAndTheirValues[elements],list):
 			for val in comdScrpt.dictionaryOfArgumentsAndTheirValues[elements]:
 				modCommandString2 = modCommandString + ' ' + val
 				writeAndRun(outputFile,modCommandString2)
 				del modCommandString2
+		del modCommandString
 
 	outputFile.close()
 
+def createTempFile(commandName,tempLocation):
+	now = datetime.datetime.now()
+	fileName = commandName + '_' + now.strftime("%Y%m%d_%H:%M")
+	fileNamePath = os.path.join(tempLocation, fileName)
+	file = open(fileNamePath, 'wt')
+
+	return file
+	
+def writeTempFile(commandString,tempFile):
+	tempFile.write(commandString)
+	tempFile.write('\n\n')
+
+def generateAndRunScripts2(comdScrpt,outputLocation, tempLocation, packageName):
+	#outputFile = createOutputFile(comdScrpt.commandName,outputLocation)
+#	tempFile = createTempFile(comdScrpt.commandName, tempLocation)
+	commandString = packageName + ' ' +comdScrpt.commandName
+	print(commandString)
+#	writeTempFile(commandString,tempFile)
+	for argument in comdScrpt.listOfArguments:
+		print(commandString + argument.text)
+		mCommandString = commandString + argument.text
+#		writeTempFile(mCommandString,tempFile)
+		processParam(argument)
+
+
+def processParam(argument):
+	for argumentChild in argument:
+		if argumentChild.tag == 
+
+
+
+
+
+
+
+	"""	for argument in comdScrpt.dictionaryOfArgumentParameterValues:
+			modCommandString = commandString + ' ' + argument
+			writeTempFile(modCommandString,tempFile)
+			if comdScrpt.dictionaryOfArgumentParameterValues[argument] == '':
+				if comdScrpt.dictionaryOfArgumentImportsFrom[argument] != ''
+					#run and extract data
+	
+
+
+
+	
+			if isinstance(comdScrpt.dictionaryOfArgumentParameterValues[argument],str):
+				modCommandString = modCommandString + ' ' + comdScrpt.dictionaryOfArgumentParameterValues[argument]
+				writeTempFile(modCommandString,tempFile)
+			elif isinstance(comdScrpt.dictionaryOfArgumentParameterValues[argument],list):
+				for val in comdScrpt.dictionaryOfArgumentParameterValues[argument]:
+					modCommandString1 = modCommandString + ' ' + val
+					writeTempFile(modCommandString1,tempFile)
+					del modCommandString1
+			del modCommandString
+	
+		#outputFile.close()
+	"""
+
 def extractData(paramText,output):
-	print("Extracting.")
 	listOfData = []
 	for line in output.split(os.linesep):
 		if paramText.upper() in line.upper():
@@ -218,16 +282,16 @@ class processCommandScript():
 			paramText = element.text
 			for subElem in element.iter('parametervalues'):
 				if subElem.text == 'None':
-					if subElem.attrib != {}:
-						print(subElem.get('importsFrom'))
-						p = runImportScript(subElem.get('importsFrom'),self.packageName)
+					for subElemImport in element.iter('importsFrom'):
+						print("Imports From: " + subElemImport.text)
+						p = runImportScript(subElemImport.text,self.packageName)
 						output, err = p.communicate()
 						if output.decode('ascii') == '':
 							print('Import Command for ' + paramText + "Had a Run Error as followed: " + err.decode('ascii'))
 						else:
 							self.dictionaryOfArgumentsAndTheirValues[paramText] = extractData(paramText.strip('-'),output.decode('ascii'))
-						self.dictOfParamImport[paramText] = subElem.attrib
-						break
+						self.dictOfParamImport[paramText] = subElemImport.text
+					break
 				else:
 					self.dictionaryOfArgumentsAndTheirValues[paramText] = getListOfValues(subElem.text)
 					break
@@ -242,4 +306,80 @@ class processCommandScript():
 		print(self.dictOfMandArg)
 		print(self.dictOfOptArg)
 		print(self.dictOfParamImport)
-					
+
+
+
+class processCommandScriptMod():
+	def __init__(self,fileName,packageName):
+		self.fileName = fileName
+		self.packageName = packageName
+		self.tree = parseXMLScript(self.fileName)
+		self.root = self.tree.getroot()
+		self.commandName = self.root.text
+		self.listOfArguments = []
+		self.dictionaryOfArgumentParameterValues = {}
+		self.dictionaryOfArgumentImportsFrom = {}
+		self.dictionaryOfArgumentAdditionalMandArg ={}
+		self.dictionaryOfArgumentAdditionalOptArg = {}
+		
+
+
+	def getArguments(self):
+		for commandArg in self.root:
+			self.listOfArguments.append(commandArg)
+
+
+	def processArgumentTree(self):
+		for element in self.listOfArguments:
+			elem = Element(element)
+			elem.getParamValue()
+			if elem.elementParamValue in ['None','NA','']:
+				self.dictionaryOfArgumentParameterValues[elem.elementText] = ''
+				elem.getImportsFrom()
+				self.dictionaryOfArgumentImportsFrom[elem.elementText] = elem.elementImportsFrom
+				elem.getMandArg()
+				self.dictionaryOfArgumentAdditionalMandArg[elem.elementText] = elem.elementMandArg
+				elem.getOptArg()
+				self.dictionaryOfArgumentAdditionalOptArg[elem.elementText] = elem.elementOptArg
+			else:
+				self.dictionaryOfArgumentParameterValues[elem.elementText] = getListOfValues(elem.elementParamValue)
+
+#		print(self.dictionaryOfArgumentParameterValues)
+#		print(self.dictionaryOfArgumentImportsFrom)
+#		print(self.dictionaryOfArgumentAdditionalMandArg)
+#		print(self.dictionaryOfArgumentAdditionalOptArg)
+
+
+
+
+
+class Element():
+	def __init__(self,element):
+		self.element = element
+		self.numOfChildren = len(self.element)
+		self.elementText = self.element.text
+		self.elementTag = self.element.tag
+		self.elementParamValue = ''
+		self.elementImportsFrom = ''
+		self.elementMandArg = ''
+		self.elementOptArg = '' 
+	
+	def getParamValue(self):
+		for paramValue in self.element.iter('parametervalues'):
+			self.elementParamValue = paramValue.text
+			break
+	def getImportsFrom(self):
+		for eachChild in range(self.numOfChildren):
+			if self.element[eachChild].tag == 'importsFrom':
+				self.elementImportsFrom = self.element[eachChild].text
+		
+		
+	def getMandArg(self):
+		for eachChild in range(self.numOfChildren):
+			if self.element[eachChild].tag == 'additionalMandDependantArgument':
+				self.elementMandArg = self.element[eachChild]
+
+	def getOptArg(self):
+		for eachChild in range(self.numOfChildren):
+			if self.element[eachChild].tag == 'additionalOptDependantArgument':
+				self.elementOptArg = self.element[eachChild]

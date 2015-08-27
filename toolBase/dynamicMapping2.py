@@ -59,6 +59,8 @@ def processCommandsWithNAValues(treeForCommand):
 				
 	return treeForCommand.commandTree
 
+
+
 def processCommandsWithNoneValues(treeForCommand,fileDictionary,dictionaryOfAbsPath):
 
 	"""This function processes the tree extracted from the command script to modify the behaviour of command arguments with "NONE" parametervalues"""
@@ -108,10 +110,11 @@ def addExtraParameterValues(treeForCommand):
 	add = 'Y'
 	while add == 'Y':
 		modTree = modifyTree(treeForCommand.commandTree, treeForCommand.listOfCommandArg)
+		print(str(len(treeForCommand.listOfCommandArg)) + " command arguments found in the script: ")
+		UTIL.printArgsBasedOnIndex(treeForCommand.listOfCommandArg, list(range(len(treeForCommand.listOfCommandArg))))
 		try:
 			add = (input("Do you wish to add any additional parameter values?(y/n) : ")).upper()
 			if add == 'Y':
-				UTIL.printArgsBasedOnIndex(treeForCommand.listOfCommandArg, list(range(len(treeForCommand.listOfCommandArg))))
 				index = int(input("Select the serial from the above list that you wish to add parameter values to: "))
 				addValue = input("Please enter the additional values that you wish to pass on to this argument. PS, you can pass mutiple values by entering it separated by a semiColon(;) : ")
 				modTree.addValues(index,addValue)
@@ -132,23 +135,132 @@ def addExtraParameterValues(treeForCommand):
 			del modTree
 	return treeForCommand.commandTree
 
+def multipleDependency(treeForCommand):
+	add = 'Y'
+	while add == 'Y':
+		modTree = modifyTree(treeForCommand.commandTree, treeForCommand.listOfCommandArg)
+		try:
+			add = (input("Do you wish to define multiple dependency in one go?(y/n) : ")).upper()
+			if add == 'Y':
+				UTIL.printArgsBasedOnIndex(treeForCommand.listOfCommandArg, list(range(len(treeForCommand.listOfCommandArg))))
+				index = int(input("Select the serial from the above list that you wish to define multiple dependency on: "))
+				addTo = [int(i) for i in ((input("Chose from the above list of arguments that you wish to add the command argument " + treeForCommand.listOfCommandArg[index].text + " as dependant argument.(PS, you can add multiple arguments by separating them by a semicolon): ")).split(';'))]
+				for singleAddToIndex in addTo:
+					pas = [index]
+					choice = input(str(treeForCommand.root[index].text) + " (M)andatory/(O)ptional dependant argument to " + str(treeForCommand.root[singleAddToIndex].text) + " ").upper()
+					if choice == 'M':
+						modTree.modifyAdditionalMandatoryGrandChild(singleAddToIndex,pas)
+					elif choice == 'O':
+						modTree.modifyAdditionalOptionalGrandChild(singleAddToIndex,pas)
+					else:
+						print("Wrong option selected. Please start again.")
+						break
+
+			elif add == 'N':
+				add = 'N'
+				print("Exiting Procedure.")
+				break
+			else:
+				print("Wrong input. Chose the correct option y/n. ")
+				continue
+		except ValueError:
+			print("That is not a valid integer. Please try again.")
+		except:
+			print("Unexpected Error: " + sys.exc_info()[0])
+		else:
+			print("No exceptions were raised.")
+			treeForCommand.commandTree = modTree.tree
+			del modTree
+
+	return treeForCommand.commandTree
+
+def checkAllCommands(treeForCommand,fileDictionary,dictionaryOfCommandsScriptAbsolutePath):
+	add = 'Y'
+	while add == 'Y':
+		modTree = modifyTree(treeForCommand.commandTree, treeForCommand.listOfCommandArg)
+		try:
+			add = (input("Do you wish to define any other dependency for command arguments found in the script?(y/n) : ")).upper()
+			if add == 'Y':
+				UTIL.printArgsBasedOnIndex(treeForCommand.listOfCommandArg, list(range(len(treeForCommand.listOfCommandArg))))
+				index = int(input("select the serial of the command that you want to add dependency from the above list: "))
+				if index > len(treeForCommand.listOfCommandArg) or index < 0:
+					print("Invalid serial selected. Please try again.")
+					continue
+				else:
+					choice = (input("What do you wish to perform? Add (M)andatory/(O)ptional dependant argument, (A)dd extra argument value, or add (I)mport script value. Press (X) to exit procedure: ")).upper()
+					if choice == 'M':
+						UTIL.printList(treeForCommand.listOfCommandArg)
+						depArg = (input("Select the commands that go along with " + treeForCommand.listOfCommandArg[index].text + " as mandatory additional arguments. You can specify multiple commands by separating them with comma(,): ")).split(',')
+						depMandArg = [int (i) for i in depArg]
+						modTree.modifyAdditionalMandatoryGrandChild(index,depMandArg)
+					elif choice == 'O':
+						UTIL.printList(treeForCommand.listOfCommandArg)
+						depArg = (input("Select the commands that go along with " + treeForCommand.listOfCommandArg[index].text + " as optional additional arguments. You can specify multiple commands by separating them with comma(,): ")).split(',')
+						depOptArg = [int (i) for i in depArg]
+						modTree.modifyAdditionalOptionalGrandChild(index,depOptArg)
+					elif choice == 'A':
+						UTIL.printArgsBasedOnIndex(treeForCommand.listOfCommandArg, list(range(len(treeForCommand.listOfCommandArg))))
+						addValue = input("Please enter the additional values that you wish to pass on to this argument. PS, you can pass mutiple values by entering it separated by a semiColon(;) : ")
+						modTree.addValues(index,addValue)
+					elif choice == 'I':
+						print(fileDictionary)
+						print("")
+						importIndex = int(input("Select the serial number of command from the above list that the command " + treeForCommand.listOfCommandArg[index].text + " imports data from: "))
+						modTree.modifyImportArgument(index,dictionaryOfAbsPath[importIndex])
+					elif chocie == 'X':
+						add = 'N'
+						print("Exit Procedure checkAllCommands")
+						break	
+					else:
+						print("Wrong option selected. Try again")
+						continue
+			elif add == 'N':
+				add = 'N'
+				print("Exiting Procedure.")
+				break
+			else:
+				print("Wrong input. Chose the correct option y/n. ")
+				continue
+		except ValueError:
+			print("That is not a valid integer. Please try again.")
+		except:
+			print("Unexpected Error: " + sys.exc_info()[0])
+		else:
+			print("No exceptions were raised.")
+			treeForCommand.commandTree = modTree.tree
+			del modTree
+	
+
+
+
+	return treeForCommand.commandTree
+
 def defineBehaviourOfCommand(commandScript,fileDictionary,dictionaryOfCommandsScriptAbsolutePath):
 	treeForCommand = command(commandScript)
 	treeForCommand.getCommandArguments()
 	treeForCommand.getCommandArgumentsValues()
 	treeForCommand.printCommandName()
 	treeForCommand.checkForNAValues()
+	treeForCommand.checkForNoArgValues()
+
+	treeForCommand.commandTree = addExtraParameterValues(treeForCommand)
+	treeForCommand.commandTree = multipleDependency(treeForCommand)
+
+	if len(treeForCommand.listOfIndexOfCommandsWithNoneValue) > 0 :
+		treeForCommand.commandTree = processCommandsWithNoneValues(treeForCommand,fileDictionary,dictionaryOfCommandsScriptAbsolutePath)
+	else:
+		print("No command argument with None values were found in the script.")	
+
 	if len(treeForCommand.listOfIndexOfCommandsWithNAValues) > 0 :
 		treeForCommand.commandTree = processCommandsWithNAValues(treeForCommand)
 	else:
 		print("No command argument with NA values were found in the script.")
-	treeForCommand.checkForNoArgValues()
-	if len(treeForCommand.listOfIndexOfCommandsWithNoneValue) > 0 :
-		treeForCommand.commandTree = processCommandsWithNoneValues(treeForCommand,fileDictionary,dictionaryOfCommandsScriptAbsolutePath)
-	else:
-		print("No command argument with None values were found in the script.")
+	
+	treeForCommand.commandTree = checkAllCommands(treeForCommand,fileDictionary,dictionaryOfCommandsScriptAbsolutePath)
+	
+	
 
-	treeForCommand.commandTree = addExtraParameterValues(treeForCommand)
+	
 	
 	return treeForCommand.commandTree
 
@@ -165,8 +277,16 @@ def defineExportBehaviour(commandIndexOf,commandIndexTo, exportCommand, dictiona
 		addTo = (input("Chose from the above list of arguments that you wish to add the command " + exportCommand.rstrip('.xml') + " for export log to(PS, you can add multiple arguments by separating them by a semicolon): ")).split(';')
 		addTo = [int(i) for i in addTo]
 		for indvAdd in addTo:
-			for commandArg in treeForCommand.root[indvAdd].iter('parametervalues'):
-				commandArg.set('importsFrom',dictionaryOfCommandsScriptAbsolutePath[commandIndexOf])
+		#	for commandArg in treeForCommand.root[indvAdd].iter('parametervalues'):
+		#		commandArg.set('importsFrom',dictionaryOfCommandsScriptAbsolutePath[commandIndexOf])
+
+
+			if treeForCommand.root[indvAdd].find('importsFrom') is None:
+				newNode = ET.SubElement(treeForCommand.root[indvAdd], 'importsFrom')
+				newNode.text = dictionaryOfCommandsScriptAbsolutePath[commandIndexOf]
+			else:
+				print("Modifying already existing import tag.")
+				(treeForCommand.root[indvAdd].find('importsFrom')).text = commandName
 
 		UTIL.writeFile(dictionaryOfCommandsScriptAbsolutePath[eachIndexOfCommandScript], treeForCommand.commandTree)
 
@@ -180,6 +300,7 @@ class modifyTree():
 		self.listOfCommandArg = commandArgList
 		self.grandChildMandTag = 'additionalMandDependantArgument'
 		self.grandChildOptTag = 'additionalOptDependantArgument'
+		self.importsFromTag = 'importsFrom'
 
 	def modifyAdditionalMandatoryGrandChild(self,modifyCommandArg, depMandCommand):
 		if self.root[modifyCommandArg].find(self.grandChildMandTag) is None:
@@ -205,13 +326,22 @@ class modifyTree():
 			commandArgVal.text = manualEntry
 
 	def modifyImportArgument(self,index,commandName):
-		for commandArg in self.root[index].iter('parametervalues'):
-			commandArg.set('importsFrom',commandName)
+#		for commandArg in self.root[index].iter('parametervalues'):
+#			commandArg.set('importsFrom',commandName)
+
+		if self.root[index].find(self.importsFromTag) is None:
+			newNode = ET.SubElement(self.root[index], self.importsFromTag)
+			newNode.text = commandName
+		else:
+			print("Modifying already existing import tag.")
+			(self.root[index].find(self.importsFromTag)).text = commandName
 
 	def addValues(self,index,addValue):
 		for commandArg in self.root[index].iter('parametervalues'):
 			commandArg.text = commandArg.text + ';' + addValue
-		
+
+
+			
 
 class command():
 	def __init__(self,commandScript):
@@ -225,6 +355,8 @@ class command():
 		self.listOfIndexOfCommandsWithNoneValue = []
 		self.dictOfCommandImportArg = {}
 		self.dictOfCommandOptArgument = {}
+		self.listOfCommandsWithNAValues = []
+		self.listOfCommandsWithNoneValue = []
 
 	def getCommandArguments(self):
 		for commandArg in self.root:
@@ -243,13 +375,13 @@ class command():
 		for indVal in range(len(self.listOfCommandArgValues)):
 			if (self.listOfCommandArgValues[indVal].text) == 'NA':
 				self.listOfIndexOfCommandsWithNAValues.append(indVal)
-		
+
 	def checkForNoArgValues(self):
 		for indVal in range(len(self.listOfCommandArgValues)):
 			if (self.listOfCommandArgValues[indVal].text) == 'None':
 				self.listOfIndexOfCommandsWithNoneValue.append(indVal)
 				self.dictOfCommandImportArg[self.listOfCommandArg[indVal].text] = self.listOfCommandArgValues[indVal].attrib
-		
+
 	def checkForDepArguments(self):
 		for commandArg in self.listOfCommandArg:
 			for commandDepArg in commandArg.iter('additionalMandDependantArgument'):

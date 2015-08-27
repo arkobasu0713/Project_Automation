@@ -25,6 +25,23 @@ def createOutputLogDirectory(logFilePath, XMLFolder):
 			print("Argument Location provided for generating log files already exists.")
 			return logFilePath
 
+def procXMLScrpt(commandScript,packageName):
+	procCommandScrpt = UTIL.processCommandScriptMod(commandScript,packageName)
+	procCommandScrpt.getArguments()
+	procCommandScrpt.processArgumentTree()
+
+	return procCommandScrpt
+
+def createTempFileDirectory(XMLFolder):
+	defTempLocation = os.path.join(XMLFolder,'..','TempFiles')
+	if os.path.exists(defTempLocation):
+		print("Default temp location already exists.")
+		return defTempLocation
+	else:
+		os.mkdir(defTempLocation)
+		print("Temp folder created at: " + defTempLocation)
+		return defTempLocation
+
 		
 class processSoftwarePackage(object):
 	"""This is the function which processes the individial XMLs and runs them agains the system specific CLI and logs the output."""
@@ -35,6 +52,7 @@ class processSoftwarePackage(object):
 		self.files, self.dictionaryOfAbsPathForXMLs = UTIL.retreiveXMLFilesAndTheirAbsPath(self.XMLFolder)
 		
 		self.outputLocation = createOutputLogDirectory(self.logFilePath, self.XMLFolder)
+		self.tempLocation = createTempFileDirectory(self.XMLFolder)
 		
 		if len(self.files) > 0:
 			print("Command scripts found in the directory: ")
@@ -60,6 +78,9 @@ class processSoftwarePackage(object):
 
 		for ser in serial:
 			print("Running Script: " + self.files[ser])
-			comdScrpt = UTIL.procXMLScrpt(self.dictionaryOfAbsPathForXMLs[ser],self.packageName)
-			UTIL.generateAndRunScripts(comdScrpt,self.outputLocation, self.packageName)
+			#comdScrpt = UTIL.procXMLScrpt(self.dictionaryOfAbsPathForXMLs[ser],self.packageName)
+		
+			comdScrptMod = procXMLScrpt(self.dictionaryOfAbsPathForXMLs[ser],self.packageName)
+			#UTIL.generateAndRunScripts(comdScrpt,self.outputLocation, self.packageName)
+			UTIL.generateAndRunScripts2(comdScrptMod,self.outputLocation, self.tempLocation, self.packageName)
 				

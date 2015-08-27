@@ -32,19 +32,18 @@ def ProcessXMLDataSource(xmlDataSource):
 def XMLDirectoryForSoftwarePackage(softwarePackageDirectory):
 	"""This function returns the XML Script directory under the software package"""
 	choiceDir = 0
-	for dirpath, dirnames, filenames in os.walk(softwarePackageDirectory):
-		for dirname in dirnames:
-			if 'XML' not in dirname:
-				dirnames.remove(dirname)
-				break
-		if len(dirnames) > 1:
-			print(list(enumerate(dirnames)))
-			choiceDir = int(input("There are more than one XML script directory in the software package as listed above. Enter the serial number for which one you wish to proceed with?: "))
-			XMLFolder = dirnames[choiceDir]
-			break
-		else:
-			XMLFolder = dirnames[0]
-			break
+	dirnames1 = os.listdir(softwarePackageDirectory)
+	listOfIndex = []
+	for dirname in dirnames1:
+		if 'XML' not in dirname:
+			listOfIndex.append(dirnames1.index(dirname))
+	dirnames11 = [i for j,i in enumerate(dirnames1) if j not in listOfIndex]
+	if len(dirnames11) > 1:
+		print(list(enumerate(dirnames11)))
+		choiceDir = int(input("There are more than one XML script directory in the software package as listed above. Enter the serial number for which one you wish to proceed with?: "))
+		XMLFolder = dirnames11[choiceDir]
+	else:
+		XMLFolder = dirnames11[0]
 	dirName = os.path.join(softwarePackageDirectory, XMLFolder)
 	if not os.path.exists(dirName):
 		print("Directory for software package not found. There is something wrong with the script buildup while processing the sample data source. Please start by processing the sample XML data source.")
