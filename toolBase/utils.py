@@ -4,6 +4,7 @@ import sys
 import datetime
 import xml.etree.ElementTree as ETProc
 import subprocess
+import ntpath
 
 
 def retreiveXMLFilesAndTheirAbsPath(XMLFolder):
@@ -112,6 +113,7 @@ def printBehaviourMappingTechnique():
 def getListOfValues(text):
 	if ';' in text:
 		listOfText = text.split(';')
+#TODO:need to handle range
 		return listOfText
 	else:
 		return text
@@ -209,34 +211,8 @@ def generateAndRunScripts2(listOfArgObjects,outputLocation, tempLocation, packag
 #		writeTempFile(mCommandString,tempFile)
 #		processParam(argument)
 
-	for argObj in listOfArgObjects:
-		commandString = packageName + " " + argObj.parameter
-		print(commandString)
+	print("r")	
 
-
-	"""	for argument in comdScrpt.dictionaryOfArgumentParameterValues:
-			modCommandString = commandString + ' ' + argument
-			writeTempFile(modCommandString,tempFile)
-			if comdScrpt.dictionaryOfArgumentParameterValues[argument] == '':
-				if comdScrpt.dictionaryOfArgumentImportsFrom[argument] != ''
-					#run and extract data
-	
-
-
-
-	
-			if isinstance(comdScrpt.dictionaryOfArgumentParameterValues[argument],str):
-				modCommandString = modCommandString + ' ' + comdScrpt.dictionaryOfArgumentParameterValues[argument]
-				writeTempFile(modCommandString,tempFile)
-			elif isinstance(comdScrpt.dictionaryOfArgumentParameterValues[argument],list):
-				for val in comdScrpt.dictionaryOfArgumentParameterValues[argument]:
-					modCommandString1 = modCommandString + ' ' + val
-					writeTempFile(modCommandString1,tempFile)
-					del modCommandString1
-			del modCommandString
-	
-		#outputFile.close()
-	"""
 
 def extractData(paramText,output):
 	listOfData = []
@@ -244,7 +220,16 @@ def extractData(paramText,output):
 		if paramText.upper() in line.upper():
 			param = (line.split('='))[1].strip()
 			listOfData.append(param)
-	return listOfData
+	return list(set(listOfData))
+
+def findPackageName(absolutePathOfCommandScript):
+	head, tail = ntpath.split(absolutePathOfCommandScript)
+	head1, tail1 = ntpath.split(head)
+	head2, tail2 = ntpath.split(head1)
+	
+
+	return tail2
+	
 
 class processCommandScript():
 	def __init__(self,fileName,packageName):
@@ -306,55 +291,23 @@ class processCommandScript():
 
 
 class processCommandScriptMod():
-	def __init__(self,fileName,packageName):
+	def __init__(self,fileName):
 		self.fileName = fileName
-		self.packageName = packageName
+		self.packageName = findPackageName(self.fileName)
 		self.tree = parseXMLScript(self.fileName)
 		self.root = self.tree.getroot()
 		self.commandName = self.root.text
 		self.listOfArguments = []
 		
-
-		self.dictionaryOfArgumentParameterValues = {}
-		self.dictionaryOfArgumentImportsFrom = {}
-		self.dictionaryOfArgumentAdditionalMandArg ={}
-		self.dictionaryOfArgumentAdditionalOptArg = {}
-		
-
-
 	def getArguments(self):
 		for commandArg in self.root:
 			self.listOfArguments.append(commandArg)
 
 
-	def processArgumentTree(self):
-		for element in self.listOfArguments:
-			elem = Element(element)
-			elem.getParamValue()
-			if elem.elementParamValue in ['None','NA','']:
-				self.dictionaryOfArgumentParameterValues[elem.elementText] = ''
-				elem.getImportsFrom()
-				self.dictionaryOfArgumentImportsFrom[elem.elementText] = elem.elementImportsFrom
-				elem.getMandArg()
-				self.dictionaryOfArgumentAdditionalMandArg[elem.elementText] = elem.elementMandArg
-				elem.getOptArg()
-				self.dictionaryOfArgumentAdditionalOptArg[elem.elementText] = elem.elementOptArg
-			else:
-				self.dictionaryOfArgumentParameterValues[elem.elementText] = getListOfValues(elem.elementParamValue)
-
-#		print(self.dictionaryOfArgumentParameterValues)
-#		print(self.dictionaryOfArgumentImportsFrom)
-#		print(self.dictionaryOfArgumentAdditionalMandArg)
-#		print(self.dictionaryOfArgumentAdditionalOptArg)
-
-
-
-
-
+	
 class processElement():
-	def __init__(self,element,packageName):
+	def __init__(self,element):
 		self.elem = element
-		self.packageName = packageName
 		self.parameter = self.elem.text
 		self.numOfChildren = len(self.elem)
 		self.hasMand = 'N'
@@ -368,27 +321,12 @@ class processElement():
 		self.dictOfOptParam = {}
 		self.listOfMandParameters = []
 		self.listOfOptParameters = []
-	"""
-	def getParamValue(self):
-		for paramValue in self.element.iter('parametervalues'):
-			self.elementParamValue = paramValue.text
-			break
-	def getImportsFrom(self):
-		for eachChild in range(self.numOfChildren):
-			if self.element[eachChild].tag == 'importsFrom':
-				self.elementImportsFrom = self.element[eachChild].text
-		
-		
-	def getMandArg(self):
-		for eachChild in range(self.numOfChildren):
-			if self.element[eachChild].tag == 'additionalMandDependantArgument':
-				self.elementMandArg = self.element[eachChild]
+		self.dictOfOptParametersValue = {}
+		self.dictOfMandParametersValue = {}
+		self.listOfStrings = []
+		self.listOfStrings.append(self.parameter)
 
-	def getOptArg(self):
-		for eachChild in range(self.numOfChildren):
-			if self.element[eachChild].tag == 'additionalOptDependantArgument':
-				self.elementOptArg = self.element[eachChild]
-	"""
+
 	def hasMandOpt(self):
 		for childNum in range(self.numOfChildren):
 			if self.elem[childNum].tag == 'additionalMandDependantArgument':
@@ -401,20 +339,26 @@ class processElement():
 				continue
 		if self.hasMand == 'Y':
 			for eachMandArgument in self.elem[self.mandIndex].findall('parameter'):
-				mandArguments = processElement(eachMandArgument,self.packageName)
+				mandArguments = processElement(eachMandArgument)
+				mandArguments.getParamValue()
 				mandArguments.hasMandOpt()
 				mandArguments.hasImports()
-				mandArguments.getParamValue()
+
+
 				self.listOfMandParameters.append(mandArguments)
-				self.dictOfMandParam[mandArguments.parameter] = mandArguments.paramValues
+				self.dictOfMandParametersValue[mandArguments.parameter] = mandArguments.paramValues
+
 		if self.hasOpt == 'Y':
 			for eachOptArgument in self.elem[self.optIndex].findall('parameter'):
-				optArguments = processElement(eachOptArgument,self.packageName)
+				optArguments = processElement(eachOptArgument)
+				optArguments.getParamValue()
 				optArguments.hasMandOpt()
 				optArguments.hasImports()
-				optArguments.getParamValue()
+
+
 				self.listOfOptParameters.append(optArguments)
-				self.dictOfOptParam[optArguments.parameter] = optArguments.paramValues
+				self.dictOfOptParametersValue[optArguments.parameter] = optArguments.paramValues
+
 
 
 	def hasImports(self):
@@ -423,7 +367,8 @@ class processElement():
 				self.hasImportsFrom = 'Y'
 				self.importsFromIndex = childNum
 		if self.hasImportsFrom == 'Y':
-			p = runImportScript(self.elem[self.importsFromIndex].text,self.packageName)
+			packName = findPackageName(self.elem[self.importsFromIndex].text)
+			p = runImportScript(self.elem[self.importsFromIndex].text,packName)
 			output, err = p.communicate()
 			if output.decode('ascii') == '':
 				print('Import Command for ' + self.parameter + "Had a Run Error as followed: " + err.decode('ascii'))
@@ -432,105 +377,89 @@ class processElement():
 
 
 	def getParamValue(self):
-		paramValue = self.elem.find('parametervalues')
-		if paramValue.text not in ['None','NA']:
-			self.paramValues = getListOfValues(paramValue.text)
+		for paramValue in self.elem.findall('parametervalues'):
+			if paramValue.text not in ['None','NA']:
+				self.paramValues = getListOfValues(paramValue.text)
+				break
 
+		
 	def printValues(self):
-		print(self.elem)
-		print(self.parameter)
-		print(self.paramValues)
-		print(self.dictOfOptParam)
-		print(self.dictOfMandParam)
-		print(self.listOfOptParameters)
-		print(self.listOfMandParameters)
+#		print(self.elem)
+#		print(self.parameter)
+#		print(self.paramValues)
+#		print(self.listOfOptParameters)
+#		print(self.listOfMandParameters)
+#		print(self.dictOfOptParametersValue)
+#		print(self.dictOfMandParametersValue)
+		print(self.listOfStrings)
+
+	def paramProcessListString(self):
+		self.listOfStrings.append(self.parameter)
+		if isinstance(self.paramValues,str):
+			self.listOfStrings.append(self.parameter + ' ' + self.paramValues)
+			if self.hasOpt == 'Y':
+		if isinstance(self.paramValues,list):
+			for eachVal in self.paramValues:
+				self.listOfStrings.append(self.parameter + ' ' + eachVal)
+		
 		
 
 
-"""def processMandatory(element,packName):
-	listOfMandParam = []
-	for eachMandParam in element.findall('parameter'):
-		mandParamArg = processElement(eachMandParam,packName)
-		mandParamArg.hasMandOpt()
-		mandParamArg.hasImports()
-		mandParamArg.getParamValue()
-		
-		listOfMandParam.append(mandParamArg)
-	return listOfMandParam
+def processParamterStr(parameterElem):
+	
+	listOfString = []
+
+	parameter = processElement(parameterElem)
+	parameter.getParamValue()
+	parameter.hasMandOpt()
+	parameter.hasImports()
+	
+	
+#	parameter.printValues()
+
+	listOfString.append(parameter.parameter)
+	if isinstance(parameter.paramValues,str):
+	#and parameter.paramValues != '':
+		listOfString.append(parameter.parameter + ' ' + parameter.paramValues)
+		if parameter.hasOpt == 'Y':
+			print("List of Opt params: ")
+			print(parameter.listOfOptParameters)
+
+			for eachOptParam in parameter.listOfOptParameters:
+				print(eachOptParam.parameter)
+				listOfString.append(parameter.parameter + ' ' + parameter.paramValues + ' ' + eachOptParam.parameter)
+				for eachOptParamVal in eachOptParam.paramValues:
+					listOfString.append(parameter.parameter + ' ' + parameter.paramValues + ' ' + eachOptParam.parameter + ' ' + eachOptParamVal)
+
+		if parameter.hasMand == 'Y':
+			print("List of Mand params: ")
+			print(parameter.listOfMandParameters)
+
+	elif isinstance(parameter.paramValues,list):
+		for indVal in parameter.paramValues:
+			listOfString.append(parameter.parameter + ' ' + indVal)
+			if parameter.hasOpt == 'Y':
+	#			print("List of Opt params: ")
+	#			print(parameter.listOfOptParameters)
+				for eachOptParam in parameter.listOfOptParameters:
+					listOfString.append(parameter.parameter + ' ' + indVal + ' ' + eachOptParam.parameter)
+					for eachOptParamVal in eachOptParam.paramValues:
+						listOfString.append(parameter.parameter + ' ' + indVal + ' ' + eachOptParam.parameter + ' ' + eachOptParamVal)
+			if parameter.hasMand == 'Y':
+				print("List of Mand params: ")
+				print(parameter.listOfMandParameters)	
+	print(listOfString)	
 
 
-def processOptional(element,packName):
-	listOfOptParam = []
-	for eachOptParam in element.findall('parameter'):
-		optParamArg = processElement(eachOptParam,packName)
-		optParamArg.hasMandOpt()
-		optParamArg.hasImports()
-		optParamArg.getParamValue()
-		
-		listOfOptParam.append(optParamArg)
-	return listOfOptParam
-"""
-
-def procXMLScrpt1(commandScript,packageName):
-	procCommandScrpt = processCommandScriptMod(commandScript,packageName)
+def procXMLScrpt1(commandScript):
+	procCommandScrpt = processCommandScriptMod(commandScript)
 	procCommandScrpt.getArguments()
-#	procCommandScrpt.processArgumentTree()
 	listOfArgumentObjects = []
 
-#	return procCommandScrpt
-
-	commandString = packageName + " " + procCommandScrpt.commandName
+	commandString = procCommandScrpt.packageName + " " + procCommandScrpt.commandName
 	print(commandString)
+
 	for parameter in procCommandScrpt.listOfArguments:
-		parameterArg = processElement(parameter,packageName)
-		parameterArg.hasMandOpt()
-		parameterArg.hasImports()
-		parameterArg.getParamValue()
-		#parameterArg.printValues()
-
-
-		commandString1 = commandString + " " + parameterArg.parameter
-		print(commandString1)
-		if isinstance(parameterArg.paramValues,str):
-			comdStr1 = commandString1 + " " + parameterArg.paramValues
-			print(comdStr1)
-			del comdStr1
-		elif isinstance(parameterArg.paramValues,list):
-			for paramVal in parameterArg.paramValues:
-				comdStr1 = commandString1 + " " + paramVal
-				print(comdStr1)
-				del comdStr1
-
-		del commandString1
 		
-		"""
-		modCommandString = commandString + " " + parameterArg.parameter
-		print(modCommandString)
-		modCommandString = modCommandString + " " + str(parameterArg.paramValues)
-		print(modCommandString)
-		if parameterArg.hasMand == 'Y':
-			listOfParam = processMandatory(parameterArg.elem[parameterArg.mandIndex],packageName)
-			for eachMandParam in listOfParam:
-				modCommandString1 = modCommandString + " " + eachMandParam.parameter
-				print(modCommandString1)
-				modCommandString1 = modCommandString1 + " " + str(eachMandParam.paramValues)
-				print(modCommandString1)
-				del modCommandString1
-		if parameterArg.hasOpt == 'Y':
-			listOfParam = processOptional(parameterArg.elem[parameterArg.optIndex],packageName)
-			for eachOptParam in listOfParam:
-				modCommandString2 = modCommandString + " " + eachOptParam.parameter
-				print(modCommandString2)
-				modCommandString2 = modCommandString2 + " " + str(eachOptParam.paramValues)
-				print(modCommandString2)
-				if eachOptParam.hasOpt == 'Y':
-					for eachOptParam1 in eachOptParam:
-						modCommandString3 = modCommandString2 + " " +eachOptParam1.parameter
-						print(modCommandString3)
-						modCommandString3 = modCommandString3 + " " + str(eachOptParam1.paramValues)
-						del modCommandString3
-				del modCommandString2
-
-
-		del modCommandString
-	"""
+		listOfCommands = processParamterStr(parameter)
+	
