@@ -320,11 +320,6 @@ class processCommandScriptMod():
 			if parameter.hasOpt == 'Y':
 				self.dictionaryOfOptParameters[parameter.parameter] = parameter.listOfOptParameters
 	
-			#parameter.paramProcessListString()
-
-			#parameter.printValues()
-			#parameter.paramProcessMandString()
-			#parameter.paramProcessOptString()
 
 	def printDetailsOfCommandScript(self):
 		print(self.listOfParameters)
@@ -363,27 +358,12 @@ class processElement():
 				continue
 		if self.hasMand == 'Y':
 			for eachMandArgument in self.elem[self.mandIndex].findall('command'):
-				mandArguments = processElement(eachMandArgument)
-				mandArguments.getParamValue()
-				mandArguments.hasMandOpt()
-				mandArguments.hasImports()
-
-
-				self.listOfMandParameters.append(mandArguments)
-				self.dictOfMandParametersValue[mandArguments.parameter] = mandArguments.paramValues
-
+				self.listOfMandParameters.append(eachMandArgument.text)
+				
 		if self.hasOpt == 'Y':
 			for eachOptArgument in self.elem[self.optIndex].findall('command'):
-				optArguments = processElement(eachOptArgument)
-				optArguments.getParamValue()
-				optArguments.hasMandOpt()
-				optArguments.hasImports()
-
-
-				self.listOfOptParameters.append(optArguments)
-				self.dictOfOptParametersValue[optArguments.parameter] = optArguments.paramValues
-
-
+				self.listOfOptParameters.append(eachOptArgument.text)
+				
 
 	def hasImports(self):
 		for childNum in range(self.numOfChildren):
@@ -408,44 +388,6 @@ class processElement():
 
 		
 
-	"""
-		if self.hasOpt == 'Y':
-			for eachOptParam in self.listOfOptParameters:
-				if isinstance(self.paramValues,str):
-					if isinstance(eachOptParam.paramValues,str):
-						self.listOfStrings.append(self.parameter + ' ' + self.paramValues + ' ' +  eachOptParam.parameter + ' ' +eachOptParam.paramValues)
-					elif isinstance(eachOptParam.paramValues,list):
-						for eachOptParamVal in eachOptParam.paramValues:
-							self.listOfStrings.append(self.parameter + ' ' + self.paramValues + ' ' + eachOptParam.parameter + ' ' + eachOptParamVal)
-				elif isinstance(self.paramValues,list):
-					for eachParamVal in self.paramValues:
-						if isinstance(eachOptParam.paramValues,str):
-							self.listOfStrings.append(self.parameter + ' ' + eachParamVal + ' ' +  eachOptParam.parameter + ' ' +eachOptParam.paramValues)
-						elif isinstance(eachOptParam.paramValues,list):
-							for eachOptParamVal in eachOptParam.paramValues:
-								self.listOfStrings.append(self.parameter + ' ' + eachParamVal + ' ' + eachOptParam.parameter + ' ' + eachOptParamVal)
-
-
-		if self.hasMand == 'Y':
-			for eachMandParam in self.listOfMandParameters:
-				if isinstance(self.paramValues,str):
-					if isinstance(eachMandParam.paramValues,str):
-						self.listOfStrings.append(self.parameter + ' ' + self.paramValues + ' ' +  eachMandParam.parameter + ' ' +eachMandParam.paramValues)
-					elif isinstance(eachMandParam.paramValues,list):
-						for eachMandParamVal in eachMandParam.paramValues:
-							self.listOfStrings.append(self.parameter + ' ' + self.paramValues + ' ' + eachMandParam.parameter + ' ' + eachMandParamVal)
-				elif isinstance(self.paramValues,list):
-					for eachParamVal in self.paramValues:
-						if isinstance(eachMandParam.paramValues,str):
-							self.listOfStrings.append(self.parameter + ' ' + eachParamVal + ' ' +  eachMandParam.parameter + ' ' +eachMandParam.paramValues)
-						elif isinstance(eachMandParam.paramValues,list):
-							for eachMandParamVal in eachMandParam.paramValues:
-								self.listOfStrings.append(self.parameter + ' ' + eachParamVal + ' ' + eachMandParam.parameter + ' ' + eachMandParamVal)
-		
-	"""
-
-
-	
 def procXMLScrpt1(commandScript):
 	procCommandScrpt = processCommandScriptMod(commandScript)
 	procCommandScrpt.getArguments()
