@@ -298,11 +298,39 @@ class processCommandScriptMod():
 		self.root = self.tree.getroot()
 		self.commandName = self.root.text
 		self.listOfArguments = []
+		self.dictOfParameter = {}
+		self.listOfParameters = []
+		self.dictionaryOfMandParameters = {}
+		self.dictionaryOfOptParameters ={}
 		
 	def getArguments(self):
 		for commandArg in self.root:
 			self.listOfArguments.append(commandArg)
+			self.listOfParameters.append(commandArg.text)
 
+	def getArgumentsVal(self):
+		for commandArg in self.listOfArguments:
+			parameter = processElement(commandArg)
+			parameter.getParamValue()
+			parameter.hasMandOpt()
+			parameter.hasImports()
+			self.dictOfParameter[parameter.parameter] = parameter.paramValues
+			if parameter.hasMand == 'Y':
+				self.dictionaryOfMandParameters[parameter.parameter] = parameter.listOfMandParameters
+			if parameter.hasOpt == 'Y':
+				self.dictionaryOfOptParameters[parameter.parameter] = parameter.listOfOptParameters
+	
+			#parameter.paramProcessListString()
+
+			#parameter.printValues()
+			#parameter.paramProcessMandString()
+			#parameter.paramProcessOptString()
+
+	def printDetailsOfCommandScript(self):
+		print(self.listOfParameters)
+		print(self.dictOfParameter)
+		print(self.dictionaryOfMandParameters)
+		print(self.dictionaryOfOptParameters)
 
 	
 class processElement():
@@ -317,15 +345,11 @@ class processElement():
 		self.optIndex = None
 		self.importsFromIndex = None
 		self.paramValues = ''
-		self.dictOfMandParam = {}
-		self.dictOfOptParam = {}
 		self.listOfMandParameters = []
 		self.listOfOptParameters = []
 		self.dictOfOptParametersValue = {}
 		self.dictOfMandParametersValue = {}
-		self.listOfStrings = []
-		self.listOfStrings.append(self.parameter)
-
+		
 
 	def hasMandOpt(self):
 		for childNum in range(self.numOfChildren):
@@ -383,83 +407,52 @@ class processElement():
 				break
 
 		
-	def printValues(self):
-#		print(self.elem)
-#		print(self.parameter)
-#		print(self.paramValues)
-#		print(self.listOfOptParameters)
-#		print(self.listOfMandParameters)
-#		print(self.dictOfOptParametersValue)
-#		print(self.dictOfMandParametersValue)
-		print(self.listOfStrings)
 
-	def paramProcessListString(self):
-		self.listOfStrings.append(self.parameter)
-		if isinstance(self.paramValues,str):
-			self.listOfStrings.append(self.parameter + ' ' + self.paramValues)
-			if self.hasOpt == 'Y':
-		if isinstance(self.paramValues,list):
-			for eachVal in self.paramValues:
-				self.listOfStrings.append(self.parameter + ' ' + eachVal)
+	"""
+		if self.hasOpt == 'Y':
+			for eachOptParam in self.listOfOptParameters:
+				if isinstance(self.paramValues,str):
+					if isinstance(eachOptParam.paramValues,str):
+						self.listOfStrings.append(self.parameter + ' ' + self.paramValues + ' ' +  eachOptParam.parameter + ' ' +eachOptParam.paramValues)
+					elif isinstance(eachOptParam.paramValues,list):
+						for eachOptParamVal in eachOptParam.paramValues:
+							self.listOfStrings.append(self.parameter + ' ' + self.paramValues + ' ' + eachOptParam.parameter + ' ' + eachOptParamVal)
+				elif isinstance(self.paramValues,list):
+					for eachParamVal in self.paramValues:
+						if isinstance(eachOptParam.paramValues,str):
+							self.listOfStrings.append(self.parameter + ' ' + eachParamVal + ' ' +  eachOptParam.parameter + ' ' +eachOptParam.paramValues)
+						elif isinstance(eachOptParam.paramValues,list):
+							for eachOptParamVal in eachOptParam.paramValues:
+								self.listOfStrings.append(self.parameter + ' ' + eachParamVal + ' ' + eachOptParam.parameter + ' ' + eachOptParamVal)
+
+
+		if self.hasMand == 'Y':
+			for eachMandParam in self.listOfMandParameters:
+				if isinstance(self.paramValues,str):
+					if isinstance(eachMandParam.paramValues,str):
+						self.listOfStrings.append(self.parameter + ' ' + self.paramValues + ' ' +  eachMandParam.parameter + ' ' +eachMandParam.paramValues)
+					elif isinstance(eachMandParam.paramValues,list):
+						for eachMandParamVal in eachMandParam.paramValues:
+							self.listOfStrings.append(self.parameter + ' ' + self.paramValues + ' ' + eachMandParam.parameter + ' ' + eachMandParamVal)
+				elif isinstance(self.paramValues,list):
+					for eachParamVal in self.paramValues:
+						if isinstance(eachMandParam.paramValues,str):
+							self.listOfStrings.append(self.parameter + ' ' + eachParamVal + ' ' +  eachMandParam.parameter + ' ' +eachMandParam.paramValues)
+						elif isinstance(eachMandParam.paramValues,list):
+							for eachMandParamVal in eachMandParam.paramValues:
+								self.listOfStrings.append(self.parameter + ' ' + eachParamVal + ' ' + eachMandParam.parameter + ' ' + eachMandParamVal)
 		
-		
+	"""
 
 
-def processParamterStr(parameterElem):
 	
-	listOfString = []
-
-	parameter = processElement(parameterElem)
-	parameter.getParamValue()
-	parameter.hasMandOpt()
-	parameter.hasImports()
-	
-	
-#	parameter.printValues()
-
-	listOfString.append(parameter.parameter)
-	if isinstance(parameter.paramValues,str):
-	#and parameter.paramValues != '':
-		listOfString.append(parameter.parameter + ' ' + parameter.paramValues)
-		if parameter.hasOpt == 'Y':
-			print("List of Opt params: ")
-			print(parameter.listOfOptParameters)
-
-			for eachOptParam in parameter.listOfOptParameters:
-				print(eachOptParam.parameter)
-				listOfString.append(parameter.parameter + ' ' + parameter.paramValues + ' ' + eachOptParam.parameter)
-				for eachOptParamVal in eachOptParam.paramValues:
-					listOfString.append(parameter.parameter + ' ' + parameter.paramValues + ' ' + eachOptParam.parameter + ' ' + eachOptParamVal)
-
-		if parameter.hasMand == 'Y':
-			print("List of Mand params: ")
-			print(parameter.listOfMandParameters)
-
-	elif isinstance(parameter.paramValues,list):
-		for indVal in parameter.paramValues:
-			listOfString.append(parameter.parameter + ' ' + indVal)
-			if parameter.hasOpt == 'Y':
-	#			print("List of Opt params: ")
-	#			print(parameter.listOfOptParameters)
-				for eachOptParam in parameter.listOfOptParameters:
-					listOfString.append(parameter.parameter + ' ' + indVal + ' ' + eachOptParam.parameter)
-					for eachOptParamVal in eachOptParam.paramValues:
-						listOfString.append(parameter.parameter + ' ' + indVal + ' ' + eachOptParam.parameter + ' ' + eachOptParamVal)
-			if parameter.hasMand == 'Y':
-				print("List of Mand params: ")
-				print(parameter.listOfMandParameters)	
-	print(listOfString)	
-
-
 def procXMLScrpt1(commandScript):
 	procCommandScrpt = processCommandScriptMod(commandScript)
 	procCommandScrpt.getArguments()
-	listOfArgumentObjects = []
-
 	commandString = procCommandScrpt.packageName + " " + procCommandScrpt.commandName
 	print(commandString)
-
-	for parameter in procCommandScrpt.listOfArguments:
-		
-		listOfCommands = processParamterStr(parameter)
+	procCommandScrpt.getArgumentsVal()
+	procCommandScrpt.printDetailsOfCommandScript()
 	
+
+
