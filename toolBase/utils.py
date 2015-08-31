@@ -362,7 +362,7 @@ class processElement():
 			else:
 				continue
 		if self.hasMand == 'Y':
-			for eachMandArgument in self.elem[self.mandIndex].findall('parameter'):
+			for eachMandArgument in self.elem[self.mandIndex].findall('command'):
 				mandArguments = processElement(eachMandArgument)
 				mandArguments.getParamValue()
 				mandArguments.hasMandOpt()
@@ -373,7 +373,7 @@ class processElement():
 				self.dictOfMandParametersValue[mandArguments.parameter] = mandArguments.paramValues
 
 		if self.hasOpt == 'Y':
-			for eachOptArgument in self.elem[self.optIndex].findall('parameter'):
+			for eachOptArgument in self.elem[self.optIndex].findall('command'):
 				optArguments = processElement(eachOptArgument)
 				optArguments.getParamValue()
 				optArguments.hasMandOpt()

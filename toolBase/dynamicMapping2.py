@@ -207,7 +207,7 @@ def checkAllCommands(treeForCommand,fileDictionary,dictionaryOfCommandsScriptAbs
 						print("")
 						importIndex = int(input("Select the serial number of command from the above list that the command " + treeForCommand.listOfCommandArg[index].text + " imports data from: "))
 						modTree.modifyImportArgument(index,dictionaryOfAbsPath[importIndex])
-					elif chocie == 'X':
+					elif choice == 'X':
 						add = 'N'
 						print("Exit Procedure checkAllCommands")
 						break	
@@ -299,6 +299,7 @@ class modifyTree():
 		self.root = self.tree.getroot()
 		self.listOfCommandArg = commandArgList
 		self.grandChildMandTag = 'additionalMandDependantArgument'
+		self.commandTag = 'command'
 		self.grandChildOptTag = 'additionalOptDependantArgument'
 		self.importsFromTag = 'importsFrom'
 
@@ -306,20 +307,24 @@ class modifyTree():
 		if self.root[modifyCommandArg].find(self.grandChildMandTag) is None:
 			newNode = ET.SubElement(self.root[modifyCommandArg],self.grandChildMandTag)
 			for i in depMandCommand:
-				newNode.append(self.listOfCommandArg[i])
+				childNode = ET.SubElement(newNode,self.commandTag)
+				childNode.text = self.listOfCommandArg[i].text
 		else:
 			for i in depMandCommand:
-				(self.root[modifyCommandArg].find(self.grandChildMandTag)).append(self.listOfCommandArg[i])
+				childNode = ET.SubElement(self.root[modifyCommandArg].find(self.grandChildOptTag),self.commandTag)
+				childNode.text = self.listOfCommandArg[i].text
 	
 				
 	def modifyAdditionalOptionalGrandChild(self,modifyCommandArg, depMandCommand):
 		if self.root[modifyCommandArg].find(self.grandChildOptTag) is None:
 			newNode = ET.SubElement(self.root[modifyCommandArg],self.grandChildOptTag)
 			for i in depMandCommand:
-				newNode.append(self.listOfCommandArg[i])
+				childNode = ET.SubElement(newNode,self.commandTag)
+				childNode.text = self.listOfCommandArg[i].text
 		else:
 			for i in depMandCommand:
-				(self.root[modifyCommandArg].find(self.grandChildOptTag)).append(self.listOfCommandArg[i])
+				childNode = ET.SubElement(self.root[modifyCommandArg].find(self.grandChildOptTag),self.commandTag)
+				childNode.text = self.listOfCommandArg[i].text
 
 	def modifyManualArgument(self, index, manualEntry):
 		for commandArgVal in self.root[index].iter('parametervalues'):
@@ -338,7 +343,10 @@ class modifyTree():
 
 	def addValues(self,index,addValue):
 		for commandArg in self.root[index].iter('parametervalues'):
-			commandArg.text = commandArg.text + ';' + addValue
+			if commandArg.text == 'None':
+				commandArg.text = addValue
+			else:
+				commandArg.text = commandArg.text + ';' + addValue
 
 
 			
