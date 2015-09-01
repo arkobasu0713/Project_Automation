@@ -110,6 +110,10 @@ def printBehaviourMappingTechnique():
 
 	print("Please note the heirarchy of the behaviour mapping. Start with the lowest order of mapping.")
 
+def printDynamicMappingTechnique():
+	
+	print("Please note that if a command takes mutiple arguments as dependant parameters. Pass them with semicolons(;) to generate similar test scripts.")
+
 def getListOfValues(text):
 	if ';' in text:
 		listOfText = text.split(';')
@@ -332,10 +336,24 @@ class processCommandScriptMod():
 					tempFile.write('\n\n')
 #				print(parameter + 'S' + commandStringWithParamAndValues)
 				if parameter in self.dictionaryOfMandParameters:
-					commandStringWithParamAndValuesAndMand = commandStringWithParamAndValues + ' ' + str(self.dictionaryOfMandParameters[parameter])
-					tempFile.write(commandStringWithParamAndValuesAndMand)
-					tempFile.write('\n\n')
-					del commandStringWithParamAndValuesAndMand
+					if isinstance(self.dictionaryOfMandParameters[parameter],str):
+						mandParam = self.dictionaryOfMandParameters[parameter]
+						commandStringWithParamAndValuesAndMand = commandStringWithParamAndValues + ' ' + mandParam
+						tempFile.write(commandStringWithParamAndValuesAndMand)
+						tempFile.write('\n\n')
+						commandStringWithParamAndValuesAndMandVal = commandStringWithParamAndValuesAndMand + ' ' + str(self.dictOfParameter[mandParam])
+						tempFile.write(commandStringWithParamAndValuesAndMandVal)
+						tempFile.write('\n\n')
+						del commandStringWithParamAndValuesAndMand, commandStringWithParamAndValuesAndMandVal
+					elif isinstance(self.dictionaryOfMandParameters[parameter],list):
+						for eachMandParam in self.dictionaryOfMandParameters[parameter]:
+							commandStringWithParamAndValuesAndMand = commandStringWithParamAndValues + ' ' + eachMandParam
+							tempFile.write(commandStringWithParamAndValuesAndMand)
+							tempFile.write('\n\n')
+							commandStringWithParamAndValuesAndMandVal = commandStringWithParamAndValuesAndMand + ' ' + str(self.dictOfParameter[eachMandParam])
+							tempFile.write(commandStringWithParamAndValuesAndMandVal)
+							tempFile.write('\n\n')
+							del commandStringWithParamAndValuesAndMand, commandStringWithParamAndValuesAndMandVal
 				del commandStringWithParamAndValues
 			elif isinstance(self.dictOfParameter[parameter],list):
 				for paramVal in self.dictOfParameter[parameter]:
@@ -345,10 +363,25 @@ class processCommandScriptMod():
 					tempFile.write('\n\n')
 #					print(parameter + 'L' + commandStringWithParamAndValues)
 					if parameter in self.dictionaryOfMandParameters:
-						commandStringWithParamAndValuesAndMand = commandStringWithParamAndValues + ' ' + str(self.dictionaryOfMandParameters[parameter])
-						tempFile.write(commandStringWithParamAndValuesAndMand)
-						tempFile.write('\n\n')
-						del commandStringWithParamAndValuesAndMand
+						if isinstance(self.dictionaryOfMandParameters[parameter],str):
+							mandParam = self.dictionaryOfMandParameters[parameter]
+							commandStringWithParamAndValuesAndMand = commandStringWithParamAndValues + ' ' + mandParam 
+							tempFile.write(commandStringWithParamAndValuesAndMand)
+							tempFile.write('\n\n')
+							commandStringWithParamAndValuesAndMandVal = commandStringWithParamAndValuesAndMand + ' ' + str(self.dictOfParameter[mandParam])
+							tempFile.write(commandStringWithParamAndValuesAndMandVal)
+							tempFile.write('\n\n')
+							del commandStringWithParamAndValuesAndMand, commandStringWithParamAndValuesAndMandVal
+						elif isinstance(self.dictionaryOfMandParameters[parameter],list):
+							for eachMandParam in self.dictionaryOfMandParameters[parameter]:
+								commandStringWithParamAndValuesAndMand = commandStringWithParamAndValues + ' ' + eachMandParam
+								tempFile.write(commandStringWithParamAndValuesAndMand)
+								tempFile.write('\n\n')
+								commandStringWithParamAndValuesAndMandVal = commandStringWithParamAndValuesAndMand + ' ' + str(self.dictOfParameter[eachMandParam])
+								tempFile.write(commandStringWithParamAndValuesAndMandVal)
+								tempFile.write('\n\n')
+								del commandStringWithParamAndValuesAndMand, commandStringWithParamAndValuesAndMandVal
+
 					del commandStringWithParamAndValues
 
 

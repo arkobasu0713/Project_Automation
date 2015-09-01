@@ -28,6 +28,7 @@ def processCommandsWithNAValues(treeForCommand):
 					mandOpt = (input("(M)andatory/(O)ptional? : ")).upper()
 					if mandOpt == 'M':
 						UTIL.printList(treeForCommand.listOfCommandArg)
+						UTIL.printDynamicMappingTechnique()
 						depArg = (input("Select the commands that go along with " + treeForCommand.listOfCommandArg[index].text + " as mandatory additional arguments. You can specify multiple commands by separating them with comma(,): ")).split(',')
 						depMandArg = [int (i) for i in depArg]
 						modTree.modifyAdditionalMandatoryGrandChild(index,depMandArg)
