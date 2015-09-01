@@ -291,6 +291,7 @@ class processCommandScriptMod():
 		self.listOfParameters = []
 		self.dictionaryOfMandParameters = {}
 		self.dictionaryOfOptParameters ={}
+		self.listOfOutputStrings = []
 		
 	def getArguments(self):
 		for commandArg in self.root:
@@ -318,10 +319,11 @@ class processCommandScriptMod():
 
 	def generateCommandsAndWriteToScripts(self, outputLocation, tempLocation):
 #		outputFile = createOutputFile(self.commandName,outputLocation)
-		tempFile = createTempFile(self.commandName, tempLocation)
+#		tempFile = createTempFile(self.commandName, tempLocation)
 		commandString = self.packageName + ' ' + self.commandName
-		tempFile.write(commandString)
-		tempFile.write('\n\n')
+		self.listOfOutputStrings.append(commanString)
+#		tempFile.write(commandString)
+#		tempFile.write('\n\n')
 #		print(commandString)
 		for parameter in self.listOfParameters:
 			commandStringWithParam = commandString + ' ' + parameter
@@ -331,29 +333,12 @@ class processCommandScriptMod():
 			if isinstance(self.dictOfParameter[parameter],str) :
 				commandStringWithParamAndValues =  commandStringWithParam  
 				if self.dictOfParameter[parameter] != '':
-					commandStringWithParamAndValues = commandStringWithParamAndValues + ' ' + str(self.dictOfParameter[parameter])
+					commandStringWithParamAndValues = commandStringWithParamAndValues + ' ' + self.dictOfParameter[parameter]
 					tempFile.write(commandStringWithParamAndValues)
 					tempFile.write('\n\n')
 #				print(parameter + 'S' + commandStringWithParamAndValues)
 				if parameter in self.dictionaryOfMandParameters:
-					if isinstance(self.dictionaryOfMandParameters[parameter],str):
-						mandParam = self.dictionaryOfMandParameters[parameter]
-						commandStringWithParamAndValuesAndMand = commandStringWithParamAndValues + ' ' + mandParam
-						tempFile.write(commandStringWithParamAndValuesAndMand)
-						tempFile.write('\n\n')
-						commandStringWithParamAndValuesAndMandVal = commandStringWithParamAndValuesAndMand + ' ' + str(self.dictOfParameter[mandParam])
-						tempFile.write(commandStringWithParamAndValuesAndMandVal)
-						tempFile.write('\n\n')
-						del commandStringWithParamAndValuesAndMand, commandStringWithParamAndValuesAndMandVal
-					elif isinstance(self.dictionaryOfMandParameters[parameter],list):
-						for eachMandParam in self.dictionaryOfMandParameters[parameter]:
-							commandStringWithParamAndValuesAndMand = commandStringWithParamAndValues + ' ' + eachMandParam
-							tempFile.write(commandStringWithParamAndValuesAndMand)
-							tempFile.write('\n\n')
-							commandStringWithParamAndValuesAndMandVal = commandStringWithParamAndValuesAndMand + ' ' + str(self.dictOfParameter[eachMandParam])
-							tempFile.write(commandStringWithParamAndValuesAndMandVal)
-							tempFile.write('\n\n')
-							del commandStringWithParamAndValuesAndMand, commandStringWithParamAndValuesAndMandVal
+					processMandStrings(tempFile,self.dictOfMandParameters[parameter],commandStringWithParamAndValues)
 				del commandStringWithParamAndValues
 			elif isinstance(self.dictOfParameter[parameter],list):
 				for paramVal in self.dictOfParameter[parameter]:
@@ -363,30 +348,42 @@ class processCommandScriptMod():
 					tempFile.write('\n\n')
 #					print(parameter + 'L' + commandStringWithParamAndValues)
 					if parameter in self.dictionaryOfMandParameters:
-						if isinstance(self.dictionaryOfMandParameters[parameter],str):
-							mandParam = self.dictionaryOfMandParameters[parameter]
-							commandStringWithParamAndValuesAndMand = commandStringWithParamAndValues + ' ' + mandParam 
-							tempFile.write(commandStringWithParamAndValuesAndMand)
-							tempFile.write('\n\n')
-							commandStringWithParamAndValuesAndMandVal = commandStringWithParamAndValuesAndMand + ' ' + str(self.dictOfParameter[mandParam])
-							tempFile.write(commandStringWithParamAndValuesAndMandVal)
-							tempFile.write('\n\n')
-							del commandStringWithParamAndValuesAndMand, commandStringWithParamAndValuesAndMandVal
-						elif isinstance(self.dictionaryOfMandParameters[parameter],list):
-							for eachMandParam in self.dictionaryOfMandParameters[parameter]:
-								commandStringWithParamAndValuesAndMand = commandStringWithParamAndValues + ' ' + eachMandParam
-								tempFile.write(commandStringWithParamAndValuesAndMand)
+						for eachMandParam in self.dictionaryOfMandParameters[parameter]:
+							cmdStrParamMand = commandStringWithParamAndValues
+							if isinstance(eachMandParam,str):
+								cmdStrParamMand = cmdStrParamMand + ' ' + eachMandParam + ' ' + str(self.dictOfParameter[eachMandParam])
+								tempFile.write(cmdStrParamMand)
 								tempFile.write('\n\n')
-								commandStringWithParamAndValuesAndMandVal = commandStringWithParamAndValuesAndMand + ' ' + str(self.dictOfParameter[eachMandParam])
-								tempFile.write(commandStringWithParamAndValuesAndMandVal)
+							elif isinstance(eachMandParam,list):
+								for eachMandParamArg in eachMandParam:
+									cmdStrParamMand = cmdStrParamMand + ' ' + eachMandParamArg + ' ' + str(self.dictOfParameter[eachMandParamArg])
+								tempFile.write(cmdStrParamMand)
 								tempFile.write('\n\n')
-								del commandStringWithParamAndValuesAndMand, commandStringWithParamAndValuesAndMandVal
-
+							del cmdStrParamMand
 					del commandStringWithParamAndValues
 
 
 				
-				
+def processMandStrings(tempFile,listOfMandArg,commandString):
+	for eachMandArg in listOfMandArg:
+		cmdStrParamMand = commandString
+		if isinstance(eachMand,str):
+			if not isinstance(self.dictOfParameter[eachMandParam],str):
+				for eachMandParamVal in self.dictOfParameter[eachMandParam]:
+					cmdStrParamMand = cmdStrParamMand + ' ' + eachMandParam + ' ' + eachMandParamVal
+					tempFile.write(cmdStrParamMand)
+					tempFile.write('\n\n')	
+			else:
+				cmdStrParamMand = cmdStrParamMand + ' ' + eachMandParam + ' ' + str(self.dictOfParameter[eachMandParam])
+				tempFile.write(cmdStrParamMand)
+				tempFile.write('\n\n')
+		elif isinstance(eachMandParam,list):
+			for eachMandParamArg in eachMandParam:
+				cmdStrParamMand = cmdStrParamMand + ' ' + eachMandParamArg + ' ' + str(self.dictOfParameter[eachMandParamArg])
+				tempFile.write(cmdStrParamMand)
+				tempFile.write('\n\n')
+			del cmdStrParamMand
+
 
 
 	
@@ -417,11 +414,17 @@ class processElement():
 				continue
 		if self.hasMand == 'Y':
 			for eachMandArgument in self.elem[self.mandIndex].findall('command'):
-				self.listOfMandParameters.append(eachMandArgument.text)
+				if ';' in eachMandArgument.text:
+					self.listOfMandParameters.append((eachMandArgument.text).split(';'))
+				else:
+					self.listOfMandParameters.append(eachMandArgument.text)
 				
 		if self.hasOpt == 'Y':
 			for eachOptArgument in self.elem[self.optIndex].findall('command'):
-				self.listOfOptParameters.append(eachOptArgument.text)
+				if ';' in eachOptArgument.text:
+					self.listOfOptParameters.append((eachOptArgument.text).split(';'))
+				else:
+					self.listOfOptParameters.append(eachOptArgument.text)
 				
 
 	def hasImports(self):
