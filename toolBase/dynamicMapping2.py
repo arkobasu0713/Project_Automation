@@ -34,6 +34,7 @@ def processCommandsWithNAValues(treeForCommand):
 						modTree.modifyAdditionalMandatoryGrandChild(index,depMandArg)
 					elif mandOpt == 'O':
 						UTIL.printList(treeForCommand.listOfCommandArg)
+						UTIL.printDynamicMappingTechnique()
 						depArg = (input("Select the commands that go along with " + treeForCommand.listOfCommandArg[index].text + " as optional additional arguments. You can specify multiple commands by separating them with comma(,): ")).split(',')
 						depOptArg = [int (i) for i in depArg]
 						modTree.modifyAdditionalOptionalGrandChild(index,depOptArg)
@@ -144,14 +145,17 @@ def multipleDependency(treeForCommand):
 			add = (input("Do you wish to define multiple dependency in one go?(y/n) : ")).upper()
 			if add == 'Y':
 				UTIL.printArgsBasedOnIndex(treeForCommand.listOfCommandArg, list(range(len(treeForCommand.listOfCommandArg))))
-				index = int(input("Select the serial from the above list that you wish to define multiple dependency on: "))
+				UTIL.printDynamicMappingTechnique()
+				index = int(input("Select the serial from the above list that you wish to define multiple dependency for: "))
 				addTo = [int(i) for i in ((input("Chose from the above list of arguments that you wish to add the command argument " + treeForCommand.listOfCommandArg[index].text + " as dependant argument.(PS, you can add multiple arguments by separating them by a semicolon): ")).split(';'))]
 				for singleAddToIndex in addTo:
 					pas = [index]
 					choice = input(str(treeForCommand.root[index].text) + " (M)andatory/(O)ptional dependant argument to " + str(treeForCommand.root[singleAddToIndex].text) + " ").upper()
 					if choice == 'M':
+						UTIL.printDynamicMappingTechnique()
 						modTree.modifyAdditionalMandatoryGrandChild(singleAddToIndex,pas)
 					elif choice == 'O':
+						UTIL.printDynamicMappingTechnique()
 						modTree.modifyAdditionalOptionalGrandChild(singleAddToIndex,pas)
 					else:
 						print("Wrong option selected. Please start again.")
@@ -191,11 +195,13 @@ def checkAllCommands(treeForCommand,fileDictionary,dictionaryOfCommandsScriptAbs
 					choice = (input("What do you wish to perform? Add (M)andatory/(O)ptional dependant argument, (A)dd extra argument value, or add (I)mport script value. Press (X) to exit procedure: ")).upper()
 					if choice == 'M':
 						UTIL.printList(treeForCommand.listOfCommandArg)
+						UTIL.printDynamicMappingTechnique()
 						depArg = (input("Select the commands that go along with " + treeForCommand.listOfCommandArg[index].text + " as mandatory additional arguments. You can specify multiple commands by separating them with comma(,): ")).split(',')
 						depMandArg = [int (i) for i in depArg]
 						modTree.modifyAdditionalMandatoryGrandChild(index,depMandArg)
 					elif choice == 'O':
 						UTIL.printList(treeForCommand.listOfCommandArg)
+						UTIL.printDynamicMappingTechnique()
 						depArg = (input("Select the commands that go along with " + treeForCommand.listOfCommandArg[index].text + " as optional additional arguments. You can specify multiple commands by separating them with comma(,): ")).split(',')
 						depOptArg = [int (i) for i in depArg]
 						modTree.modifyAdditionalOptionalGrandChild(index,depOptArg)
@@ -305,27 +311,32 @@ class modifyTree():
 		self.importsFromTag = 'importsFrom'
 
 	def modifyAdditionalMandatoryGrandChild(self,modifyCommandArg, depMandCommand):
+		text = ''
+		for i in depMandCommand:
+			text = text + self.listOfCommandArg[i].text + ';'
+		text = text.rstrip(';')
+					
 		if self.root[modifyCommandArg].find(self.grandChildMandTag) is None:
 			newNode = ET.SubElement(self.root[modifyCommandArg],self.grandChildMandTag)
-			for i in depMandCommand:
-				childNode = ET.SubElement(newNode,self.commandTag)
-				childNode.text = self.listOfCommandArg[i].text
+			childNode = ET.SubElement(newNode,self.commandTag)
+			childNode.text = text
 		else:
-			for i in depMandCommand:
-				childNode = ET.SubElement(self.root[modifyCommandArg].find(self.grandChildOptTag),self.commandTag)
-				childNode.text = self.listOfCommandArg[i].text
+			childNode = ET.SubElement(self.root[modifyCommandArg].find(self.grandChildMandTag),self.commandTag)
+			childNode.text = text
 	
 				
-	def modifyAdditionalOptionalGrandChild(self,modifyCommandArg, depMandCommand):
+	def modifyAdditionalOptionalGrandChild(self,modifyCommandArg, depOptCommand):
+		text = ''
+		for i in depOptCommand:
+			text = text + self.listOfCommandArg[i].text + ';'
+		text = text.rstrip(';')
 		if self.root[modifyCommandArg].find(self.grandChildOptTag) is None:
 			newNode = ET.SubElement(self.root[modifyCommandArg],self.grandChildOptTag)
-			for i in depMandCommand:
-				childNode = ET.SubElement(newNode,self.commandTag)
-				childNode.text = self.listOfCommandArg[i].text
+			childNode = ET.SubElement(newNode,self.commandTag)
+			childNode.text = text
 		else:
-			for i in depMandCommand:
-				childNode = ET.SubElement(self.root[modifyCommandArg].find(self.grandChildOptTag),self.commandTag)
-				childNode.text = self.listOfCommandArg[i].text
+			childNode = ET.SubElement(self.root[modifyCommandArg].find(self.grandChildOptTag),self.commandTag)
+			childNode.text = text
 
 	def modifyManualArgument(self, index, manualEntry):
 		for commandArgVal in self.root[index].iter('parametervalues'):
