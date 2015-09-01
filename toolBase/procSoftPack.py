@@ -75,7 +75,7 @@ class processSoftwarePackage(object):
 			print("Running Script: " + self.files[ser])
 			#comdScrpt = UTIL.procXMLScrpt(self.dictionaryOfAbsPathForXMLs[ser],self.packageName)
 			#UTIL.generateAndRunScripts(comdScrpt,self.outputLocation, self.packageName)
-			listOfArgObjects = UTIL.procXMLScrpt1(self.dictionaryOfAbsPathForXMLs[ser])
+			listOfArgObjects = UTIL.procXMLScrpt1(self.dictionaryOfAbsPathForXMLs[ser],self.outputLocation,self.tempLocation)
 			
 			#UTIL.generateAndRunScripts2(listOfArgObjects,self.outputLocation, self.tempLocation, self.packageName)
 				

@@ -199,21 +199,6 @@ def writeTempFile(commandString,tempFile):
 	tempFile.write(commandString)
 	tempFile.write('\n\n')
 
-def generateAndRunScripts2(listOfArgObjects,outputLocation, tempLocation, packageName):
-	#outputFile = createOutputFile(comdScrpt.commandName,outputLocation)
-#	tempFile = createTempFile(comdScrpt.commandName, tempLocation)
-#	commandString = packageName + ' ' +comdScrpt.commandName
-#	print(commandString)
-#	writeTempFile(commandString,tempFile)
-#	for argument in comdScrpt.listOfArguments:
-#		print(commandString + argument.text)
-#		mCommandString = commandString + argument.text
-#		writeTempFile(mCommandString,tempFile)
-#		processParam(argument)
-
-	print("r")	
-
-
 def extractData(paramText,output):
 	listOfData = []
 	for line in output.split(os.linesep):
@@ -308,7 +293,7 @@ class processCommandScriptMod():
 			self.listOfArguments.append(commandArg)
 			self.listOfParameters.append(commandArg.text)
 
-	def getArgumentsVal(self):
+	def getArgumentsDet(self):
 		for commandArg in self.listOfArguments:
 			parameter = processElement(commandArg)
 			parameter.getParamValue()
@@ -327,6 +312,50 @@ class processCommandScriptMod():
 		print(self.dictionaryOfMandParameters)
 		print(self.dictionaryOfOptParameters)
 
+	def generateCommandsAndWriteToScripts(self, outputLocation, tempLocation):
+#		outputFile = createOutputFile(self.commandName,outputLocation)
+		tempFile = createTempFile(self.commandName, tempLocation)
+		commandString = self.packageName + ' ' + self.commandName
+		tempFile.write(commandString)
+		tempFile.write('\n\n')
+#		print(commandString)
+		for parameter in self.listOfParameters:
+			commandStringWithParam = commandString + ' ' + parameter
+			tempFile.write(commandStringWithParam)
+			tempFile.write('\n\n')
+#			print(commandStringWithParam)
+			if isinstance(self.dictOfParameter[parameter],str) :
+				commandStringWithParamAndValues =  commandStringWithParam  
+				if self.dictOfParameter[parameter] != '':
+					commandStringWithParamAndValues = commandStringWithParamAndValues + ' ' + str(self.dictOfParameter[parameter])
+					tempFile.write(commandStringWithParamAndValues)
+					tempFile.write('\n\n')
+#				print(parameter + 'S' + commandStringWithParamAndValues)
+				if parameter in self.dictionaryOfMandParameters:
+					commandStringWithParamAndValuesAndMand = commandStringWithParamAndValues + ' ' + str(self.dictionaryOfMandParameters[parameter])
+					tempFile.write(commandStringWithParamAndValuesAndMand)
+					tempFile.write('\n\n')
+					del commandStringWithParamAndValuesAndMand
+				del commandStringWithParamAndValues
+			elif isinstance(self.dictOfParameter[parameter],list):
+				for paramVal in self.dictOfParameter[parameter]:
+					#print(paramVal)
+					commandStringWithParamAndValues = commandStringWithParam + ' ' + paramVal
+					tempFile.write(commandStringWithParamAndValues)
+					tempFile.write('\n\n')
+#					print(parameter + 'L' + commandStringWithParamAndValues)
+					if parameter in self.dictionaryOfMandParameters:
+						commandStringWithParamAndValuesAndMand = commandStringWithParamAndValues + ' ' + str(self.dictionaryOfMandParameters[parameter])
+						tempFile.write(commandStringWithParamAndValuesAndMand)
+						tempFile.write('\n\n')
+						del commandStringWithParamAndValuesAndMand
+					del commandStringWithParamAndValues
+
+
+				
+				
+
+
 	
 class processElement():
 	def __init__(self,element):
@@ -342,10 +371,7 @@ class processElement():
 		self.paramValues = ''
 		self.listOfMandParameters = []
 		self.listOfOptParameters = []
-		self.dictOfOptParametersValue = {}
-		self.dictOfMandParametersValue = {}
 		
-
 	def hasMandOpt(self):
 		for childNum in range(self.numOfChildren):
 			if self.elem[childNum].tag == 'additionalMandDependantArgument':
@@ -388,13 +414,12 @@ class processElement():
 
 		
 
-def procXMLScrpt1(commandScript):
+def procXMLScrpt1(commandScript,outputLocation,tempLocation):
 	procCommandScrpt = processCommandScriptMod(commandScript)
 	procCommandScrpt.getArguments()
-	commandString = procCommandScrpt.packageName + " " + procCommandScrpt.commandName
-	print(commandString)
-	procCommandScrpt.getArgumentsVal()
+	procCommandScrpt.getArgumentsDet()
 	procCommandScrpt.printDetailsOfCommandScript()
+	procCommandScrpt.generateCommandsAndWriteToScripts(outputLocation,tempLocation)
 	
 
 
