@@ -5,6 +5,7 @@ import datetime
 import xml.etree.ElementTree as ETProc
 import subprocess
 import ntpath
+import itertools
 
 
 def retreiveXMLFilesAndTheirAbsPath(XMLFolder):
@@ -316,75 +317,117 @@ class processCommandScriptMod():
 		print(self.dictOfParameter)
 		print(self.dictionaryOfMandParameters)
 		print(self.dictionaryOfOptParameters)
+		print(self.listOfOutputStrings)
+
 
 	def generateCommandsAndWriteToScripts(self, outputLocation, tempLocation):
 #		outputFile = createOutputFile(self.commandName,outputLocation)
 #		tempFile = createTempFile(self.commandName, tempLocation)
 		commandString = self.packageName + ' ' + self.commandName
-		self.listOfOutputStrings.append(commanString)
-#		tempFile.write(commandString)
-#		tempFile.write('\n\n')
-#		print(commandString)
+		self.listOfOutputStrings.append(commandString)
 		for parameter in self.listOfParameters:
 			commandStringWithParam = commandString + ' ' + parameter
-			tempFile.write(commandStringWithParam)
-			tempFile.write('\n\n')
-#			print(commandStringWithParam)
-			if isinstance(self.dictOfParameter[parameter],str) :
-				commandStringWithParamAndValues =  commandStringWithParam  
-				if self.dictOfParameter[parameter] != '':
-					commandStringWithParamAndValues = commandStringWithParamAndValues + ' ' + self.dictOfParameter[parameter]
-					tempFile.write(commandStringWithParamAndValues)
-					tempFile.write('\n\n')
-#				print(parameter + 'S' + commandStringWithParamAndValues)
-				if parameter in self.dictionaryOfMandParameters:
-					processMandStrings(tempFile,self.dictOfMandParameters[parameter],commandStringWithParamAndValues)
-				del commandStringWithParamAndValues
-			elif isinstance(self.dictOfParameter[parameter],list):
-				for paramVal in self.dictOfParameter[parameter]:
-					#print(paramVal)
-					commandStringWithParamAndValues = commandStringWithParam + ' ' + paramVal
-					tempFile.write(commandStringWithParamAndValues)
-					tempFile.write('\n\n')
-#					print(parameter + 'L' + commandStringWithParamAndValues)
-					if parameter in self.dictionaryOfMandParameters:
-						for eachMandParam in self.dictionaryOfMandParameters[parameter]:
-							cmdStrParamMand = commandStringWithParamAndValues
-							if isinstance(eachMandParam,str):
-								cmdStrParamMand = cmdStrParamMand + ' ' + eachMandParam + ' ' + str(self.dictOfParameter[eachMandParam])
-								tempFile.write(cmdStrParamMand)
-								tempFile.write('\n\n')
-							elif isinstance(eachMandParam,list):
-								for eachMandParamArg in eachMandParam:
-									cmdStrParamMand = cmdStrParamMand + ' ' + eachMandParamArg + ' ' + str(self.dictOfParameter[eachMandParamArg])
-								tempFile.write(cmdStrParamMand)
-								tempFile.write('\n\n')
-							del cmdStrParamMand
-					del commandStringWithParamAndValues
-
+#			self.listOfOutputStrings.append(commandStringWithParam)
+			parameterVal = ''
+			parameterMandArgs = ''
+			parameterOptArgs = ''
+			if parameter in self.dictionaryOfMandParameters:
+				parameterMandArgs = self.dictionaryOfMandParameters[parameter]
+			if parameter in self.dictionaryOfOptParameters:
+				parameterOptArgs = self.dictionaryOfOptParameters[parameter]
+			procParam = processParameter(parameter, parameterMandArgs, parameterOptArgs,self.dictOfParameter)
+			procParam.paramVal()
+			procParam.mandArg()
+			procParam.optArg()
+			procParam.printString()
+#			print(procParam.listOfParamValueStrings)
+#			print(procParam.listOfMandStrings)
+#			print(procParam.listOfOptStrings)
+#			print(list(itertools.product(procParam.listOfParamValueStrings,procParam.listOfMandStrings,procParam.listOfOptStrings)))
+#			print("----------------")
+#			for eachStr in listOfStr:
+#				self.listOfOutputStrings.append(eachStr)
 
 				
-def processMandStrings(tempFile,listOfMandArg,commandString):
-	for eachMandArg in listOfMandArg:
-		cmdStrParamMand = commandString
-		if isinstance(eachMand,str):
-			if not isinstance(self.dictOfParameter[eachMandParam],str):
-				for eachMandParamVal in self.dictOfParameter[eachMandParam]:
-					cmdStrParamMand = cmdStrParamMand + ' ' + eachMandParam + ' ' + eachMandParamVal
-					tempFile.write(cmdStrParamMand)
-					tempFile.write('\n\n')	
+
+
+
+class processParameter():
+	def __init__(self,parameter,mandArgs,optArgs,dictOfParameter):
+		self.parameter = parameter
+		self.mandArgs = mandArgs
+		self.optArgs = optArgs
+		self.dictOfParameter = dictOfParameter
+		self.listOfParamValueStrings = []
+		self.listOfMandStrings = []
+		self.listOfOptStrings = []
+		self.listOfPrintStrings = []
+
+	def paramVal(self):
+		if isinstance(self.dictOfParameter[self.parameter],str):
+			self.listOfParamValueStrings.append(self.parameter + ' ' + self.dictOfParameter[self.parameter])
+		else:
+			for eachParamVal in self.dictOfParameter[self.parameter]:
+				self.listOfParamValueStrings.append(self.parameter + ' ' + eachParamVal)
+		print("Param Value strings: " )
+		print(self.listOfParamValueStrings)
+
+	def mandArg(self):
+		for eachMandArg in self.mandArgs:
+			if isinstance(eachMandArg,str):
+				if isinstance(self.dictOfParameter[eachMandArg],str):
+					self.listOfMandStrings.append(eachMandArg + ' ' + self.dictOfParameter[eachMandArg])
+				else:
+					for eachMandVal in self.dictOfParameter[eachMandArg]:
+						self.listOfMandStrings.append(eachMandArg + ' ' + eachMandVal)
 			else:
-				cmdStrParamMand = cmdStrParamMand + ' ' + eachMandParam + ' ' + str(self.dictOfParameter[eachMandParam])
-				tempFile.write(cmdStrParamMand)
-				tempFile.write('\n\n')
-		elif isinstance(eachMandParam,list):
-			for eachMandParamArg in eachMandParam:
-				cmdStrParamMand = cmdStrParamMand + ' ' + eachMandParamArg + ' ' + str(self.dictOfParameter[eachMandParamArg])
-				tempFile.write(cmdStrParamMand)
-				tempFile.write('\n\n')
-			del cmdStrParamMand
+				listOfStringsMaj = []
+				for i in range(len(eachMandArg)):
+					listOfStrings = []
+					if isinstance(self.dictOfParameter[eachMandArg[i]],str):
+						listOfStrings.append(eachMandArg[i] + ' ' + self.dictOfParameter[eachMandArg[i]])
+					else:
+						for eachMandVal in self.dictOfParameter[eachMandArg[i]]:
+							listOfStrings.append(eachMandArg[i] + ' ' + eachMandVal)
+					listOfStringsMaj.append(listOfStrings)
+				for eachComb in list(itertools.product(*listOfStringsMaj)):
+					string = ''
+					for eachCombPart in eachComb:
+						string = string + eachCombPart + ' ' 
+					self.listOfMandStrings.append(string)
+					
+		print("ListOfMandStrings:")
+		print(self.listOfMandStrings)	
 
+	def optArg(self):
+		for eachOptArg in self.optArgs:
+			if isinstance(eachOptArg,str):
+				if isinstance(self.dictOfParameter[eachOptArg],str):
+					self.listOfOptStrings.append(eachOptArg + ' ' + self.dictOfParameter[eachOptArg])
+				else:
+					for eachOptVal in self.dictOfParameter[eachOptArg]:
+						self.listOfOptStrings.append(eachOptArg + ' ' + eachOptVal)
+			else:
+				listOfStringsMaj = []
+				for i in range(len(eachOptArg)):
+					listOfStrings = []
+					if isinstance(self.dictOfParameter[eachOptArg[i]],str):
+						listOfStrings.append(eachOptArg[i] + ' ' + self.dictOfParameter[eachOptArg[i]])
+					else:
+						for eachOptVal in self.dictOfParameter[eachOptArg[i]]:
+							listOfStrings.append(eachOptArg[i] + ' ' + eachOptVal)
+					listOfStringsMaj.append(listOfStrings)
+				for eachComb in list(itertools.product(*listOfStringsMaj)):
+					string = ''
+					for eachCombPart in eachComb:
+						string = string + eachCombPart + ' ' 
+					self.listOfOptStrings.append(string)
+					
+		print("ListOfOptStrings:")
+		print(self.listOfOptStrings)	
 
+	def printString(self):
+				
 
 	
 class processElement():
@@ -454,8 +497,5 @@ def procXMLScrpt1(commandScript,outputLocation,tempLocation):
 	procCommandScrpt = processCommandScriptMod(commandScript)
 	procCommandScrpt.getArguments()
 	procCommandScrpt.getArgumentsDet()
-	procCommandScrpt.printDetailsOfCommandScript()
 	procCommandScrpt.generateCommandsAndWriteToScripts(outputLocation,tempLocation)
-	
-
-
+#	procCommandScrpt.printDetailsOfCommandScript()
