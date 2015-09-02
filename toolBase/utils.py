@@ -193,14 +193,10 @@ def createTempFile(commandName,tempLocation):
 	now = datetime.datetime.now()
 	fileName = commandName + '_' + now.strftime("%Y%m%d_%H:%M")
 	fileNamePath = os.path.join(tempLocation, fileName)
-	file = open(fileNamePath, 'wt')
+	tempFile = open(fileNamePath, 'wt')
 
-	return file
+	return tempFile, fileNamePath
 	
-def writeTempFile(commandString,tempFile):
-	tempFile.write(commandString)
-	tempFile.write('\n\n')
-
 def extractData(paramText,output):
 	listOfData = []
 	for line in output.split(os.linesep):
@@ -216,6 +212,20 @@ def findPackageName(absolutePathOfCommandScript):
 	
 
 	return tail2
+
+def runTempScripts(outputFileObj,tempFile):
+
+	f = open(tempFile,'r')
+	for eachLine in f:
+		outputFileObj.write("Running: " + eachLine)
+		outputFileObj.write('\n\n')
+		p = RunScript(eachLine)
+		output, err = p.communicate()
+		if output.decode('ascii') == '':
+			outputFileObj.write(err.decode('ascii'))
+		else:
+			outputFileObj.write(output.decode('ascii'))
+		outputFileObj.write("\n")
 	
 
 class processCommandScript():
@@ -290,6 +300,8 @@ class processCommandScriptMod():
 		self.dictionaryOfMandParameters = {}
 		self.dictionaryOfOptParameters ={}
 		self.listOfOutputStrings = []
+		self.tempFile = None
+		self.tempFileNamePath = None
 		
 	def getArguments(self):
 		for commandArg in self.root:
@@ -317,9 +329,9 @@ class processCommandScriptMod():
 		print(self.listOfOutputStrings)
 
 
-	def generateCommandsAndWriteToScripts(self, outputLocation, tempLocation):
+	def generateCommandsAndWriteToScripts(self):
 #		outputFile = createOutputFile(self.commandName,outputLocation)
-		tempFile = createTempFile(self.commandName, tempLocation)
+#		self.tempFile, self.tempFileNamePath = createTempFile(self.commandName, tempLocation)
 		commandString = self.packageName + ' ' + self.commandName
 		for parameter in self.listOfParameters:
 			commandStringWithParam = commandString + ' ' + parameter
@@ -335,12 +347,10 @@ class processCommandScriptMod():
 			procParam.mandArg()
 			procParam.optArg()
 			procParam.processPrintString()
-#			print(procParam.listOfPrintStrings)
 			for eachString in procParam.listOfPrintStrings:
-				tempFile.write(commandString + ' ' + eachString)
-				tempFile.write('\n')
-				
-#			runTempScript()
+				self.tempFile.write(commandString + ' ' + eachString)
+				self.tempFile.write('\n')
+		self.tempFile.close()		
 
 class processParameter():
 	def __init__(self,parameter,mandArgs,optArgs,dictOfParameter):
@@ -420,37 +430,24 @@ class processParameter():
 		masterList = []
 		masterList.append(self.listOfParamValueStrings)
 		if self.listOfMandStrings != []:
-#			print('append Mand')
 			self.listOfMandStrings.append(' ')
 			masterList.append(self.listOfMandStrings)
-#			masterList.append(' ')
 		else:
-#			print('enter blank mand value')
 			masterList.append([' '])
 		if self.listOfOptStrings != []:
-#			print('append opt')
 			self.listOfOptStrings.append(' ')
 			masterList.append(self.listOfOptStrings)
-#			masterList.append(' ')
 		else:
-#			print('enter blank opt value')
 			masterList.append([' '])
 				
-		"""
-		for eachComb in list(itertools.product(*masterList)):
-			string = ''
-			for eachCombPart in eachComb:
-				string = string + ' ' + eachCombPart
-			print(string)
-			print('\n')
-		"""
-#		print(masterList)
 		for eachString in list(itertools.product(*masterList)):
 			string = '' 
 			for eachPartString in eachString:
 				string = string + ' ' + eachPartString
 			string = (string.rstrip()).lstrip()
 			self.listOfPrintStrings.append(string)
+
+		self.listOfPrintStrings.sort()
 
 class processElement():
 	def __init__(self,element):
@@ -519,5 +516,8 @@ def procXMLScrpt1(commandScript,outputLocation,tempLocation):
 	procCommandScrpt = processCommandScriptMod(commandScript)
 	procCommandScrpt.getArguments()
 	procCommandScrpt.getArgumentsDet()
-	procCommandScrpt.generateCommandsAndWriteToScripts(outputLocation,tempLocation)
-#	procCommandScrpt.printDetailsOfCommandScript()
+	procCommandScrpt.tempFile, procCommandScrpt.tempFileNamePath = createTempFile(procCommandScrpt.commandName, tempLocation)
+	procCommandScrpt.generateCommandsAndWriteToScripts()
+	outputFile = createOutputFile(procCommandScrpt.commandName,outputLocation)
+	runTempScripts(outputFile,procCommandScrpt.tempFileNamePath)
+	outputFile.close()

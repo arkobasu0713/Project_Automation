@@ -25,8 +25,6 @@ def createOutputLogDirectory(logFilePath, XMLFolder):
 			print("Argument Location provided for generating log files already exists.")
 			return logFilePath
 
-
-
 def createTempFileDirectory(XMLFolder):
 	defTempLocation = os.path.join(XMLFolder,'..','TempFiles')
 	if os.path.exists(defTempLocation):
