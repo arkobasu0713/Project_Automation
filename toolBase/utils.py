@@ -160,15 +160,12 @@ def runImportScript(commandScript,packageName):
 def writeAndRun(outputFile,commandString):
 	outputFile.write(commandString)
 	outputFile.write("\n")
-#	print(commandString)
 	p = RunScript(commandString)
 	output, err = p.communicate()
 	if output.decode('ascii') == '':
 		outputFile.write(err.decode('ascii'))
-#		print(err.decode('ascii'))
 	else:
 		outputFile.write(output.decode('ascii'))
-#		print(output.decode('ascii'))
 	outputFile.write("\n")
 	
 
@@ -322,12 +319,10 @@ class processCommandScriptMod():
 
 	def generateCommandsAndWriteToScripts(self, outputLocation, tempLocation):
 #		outputFile = createOutputFile(self.commandName,outputLocation)
-#		tempFile = createTempFile(self.commandName, tempLocation)
+		tempFile = createTempFile(self.commandName, tempLocation)
 		commandString = self.packageName + ' ' + self.commandName
-		self.listOfOutputStrings.append(commandString)
 		for parameter in self.listOfParameters:
 			commandStringWithParam = commandString + ' ' + parameter
-#			self.listOfOutputStrings.append(commandStringWithParam)
 			parameterVal = ''
 			parameterMandArgs = ''
 			parameterOptArgs = ''
@@ -339,18 +334,13 @@ class processCommandScriptMod():
 			procParam.paramVal()
 			procParam.mandArg()
 			procParam.optArg()
-			procParam.printString()
-#			print(procParam.listOfParamValueStrings)
-#			print(procParam.listOfMandStrings)
-#			print(procParam.listOfOptStrings)
-#			print(list(itertools.product(procParam.listOfParamValueStrings,procParam.listOfMandStrings,procParam.listOfOptStrings)))
-#			print("----------------")
-#			for eachStr in listOfStr:
-#				self.listOfOutputStrings.append(eachStr)
-
+			procParam.processPrintString()
+#			print(procParam.listOfPrintStrings)
+			for eachString in procParam.listOfPrintStrings:
+				tempFile.write(commandString + ' ' + eachString)
+				tempFile.write('\n')
 				
-
-
+#			runTempScript()
 
 class processParameter():
 	def __init__(self,parameter,mandArgs,optArgs,dictOfParameter):
@@ -426,25 +416,42 @@ class processParameter():
 #		print("ListOfOptStrings:")
 #		print(self.listOfOptStrings)	
 
-	def printString(self):
+	def processPrintString(self):
 		masterList = []
 		masterList.append(self.listOfParamValueStrings)
 		if self.listOfMandStrings != []:
 #			print('append Mand')
+			self.listOfMandStrings.append(' ')
 			masterList.append(self.listOfMandStrings)
+#			masterList.append(' ')
 		else:
 #			print('enter blank mand value')
-			masterList.append(' ')
+			masterList.append([' '])
 		if self.listOfOptStrings != []:
 #			print('append opt')
+			self.listOfOptStrings.append(' ')
 			masterList.append(self.listOfOptStrings)
+#			masterList.append(' ')
 		else:
 #			print('enter blank opt value')
-			masterList.append(' ')
+			masterList.append([' '])
 				
-		print(masterList)
-		print(list(itertools.product(*masterList)))
-	
+		"""
+		for eachComb in list(itertools.product(*masterList)):
+			string = ''
+			for eachCombPart in eachComb:
+				string = string + ' ' + eachCombPart
+			print(string)
+			print('\n')
+		"""
+#		print(masterList)
+		for eachString in list(itertools.product(*masterList)):
+			string = '' 
+			for eachPartString in eachString:
+				string = string + ' ' + eachPartString
+			string = (string.rstrip()).lstrip()
+			self.listOfPrintStrings.append(string)
+
 class processElement():
 	def __init__(self,element):
 		self.elem = element
