@@ -369,8 +369,8 @@ class processParameter():
 		else:
 			for eachParamVal in self.dictOfParameter[self.parameter]:
 				self.listOfParamValueStrings.append(self.parameter + ' ' + eachParamVal)
-		print("Param Value strings: " )
-		print(self.listOfParamValueStrings)
+#		print("Param Value strings: " )
+#		print(self.listOfParamValueStrings)
 
 	def mandArg(self):
 		for eachMandArg in self.mandArgs:
@@ -396,8 +396,8 @@ class processParameter():
 						string = string + eachCombPart + ' ' 
 					self.listOfMandStrings.append(string)
 					
-		print("ListOfMandStrings:")
-		print(self.listOfMandStrings)	
+#		print("ListOfMandStrings:")
+#		print(self.listOfMandStrings)	
 
 	def optArg(self):
 		for eachOptArg in self.optArgs:
@@ -423,12 +423,27 @@ class processParameter():
 						string = string + eachCombPart + ' ' 
 					self.listOfOptStrings.append(string)
 					
-		print("ListOfOptStrings:")
-		print(self.listOfOptStrings)	
+#		print("ListOfOptStrings:")
+#		print(self.listOfOptStrings)	
 
 	def printString(self):
+		masterList = []
+		masterList.append(self.listOfParamValueStrings)
+		if self.listOfMandStrings != []:
+#			print('append Mand')
+			masterList.append(self.listOfMandStrings)
+		else:
+#			print('enter blank mand value')
+			masterList.append(' ')
+		if self.listOfOptStrings != []:
+#			print('append opt')
+			masterList.append(self.listOfOptStrings)
+		else:
+#			print('enter blank opt value')
+			masterList.append(' ')
 				
-
+		print(masterList)
+		print(list(itertools.product(*masterList)))
 	
 class processElement():
 	def __init__(self,element):
