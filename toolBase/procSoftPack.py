@@ -8,6 +8,10 @@ import subprocess
 from . import utils as UTIL
 
 def createOutputLogDirectory(logFilePath, XMLFolder):
+
+	"""This method creates the Output Log Directory.
+	Returns the path to the output log directory."""
+
 	if logFilePath == '' or logFilePath is None:
 		print("No log file path provided in the argument. Hence creating in the default directory location.")
 		defLogLocation = os.path.join(XMLFolder,'..','LogDump')
@@ -26,6 +30,10 @@ def createOutputLogDirectory(logFilePath, XMLFolder):
 			return logFilePath
 
 def createTempFileDirectory(XMLFolder):
+
+	"""This method creates the temp file directory in the compiled software package directory where the scripts are generated.
+	Returns the tempfile directory path."""
+
 	defTempLocation = os.path.join(XMLFolder,'..','TempFiles')
 	if os.path.exists(defTempLocation):
 		print("Default temp location already exists.")
@@ -37,7 +45,9 @@ def createTempFileDirectory(XMLFolder):
 
 		
 class processSoftwarePackage(object):
+
 	"""This is the function which processes the individial XMLs and runs them agains the system specific CLI and logs the output."""
+
 	def __init__(self,softwarePackageName,softwarePackageXMLFolder,logFilePath):
 		self.packageName = softwarePackageName
 		self.XMLFolder = softwarePackageXMLFolder
@@ -71,9 +81,6 @@ class processSoftwarePackage(object):
 
 		for ser in serial:
 			print("Running Script: " + self.files[ser])
-			#comdScrpt = UTIL.procXMLScrpt(self.dictionaryOfAbsPathForXMLs[ser],self.packageName)
-			#UTIL.generateAndRunScripts(comdScrpt,self.outputLocation, self.packageName)
 			listOfArgObjects = UTIL.procXMLScrpt1(self.dictionaryOfAbsPathForXMLs[ser],self.outputLocation,self.tempLocation)
 			
-			#UTIL.generateAndRunScripts2(listOfArgObjects,self.outputLocation, self.tempLocation, self.packageName)
 				

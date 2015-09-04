@@ -10,7 +10,9 @@ import itertools
 
 def retreiveXMLFilesAndTheirAbsPath(XMLFolder):
 
-	"""This function walks through the Original XML Scripts folder and returns two dictionaries of files and their absolute path corresponding to serial numbers as keys for the programs to refer to."""
+	"""This function walks through the Original XML Scripts folder and returns two dictionaries of files and 
+	their absolute path corresponding to serial numbers as keys for the programs to refer to.
+	Returns a couple of lists containing the file names and dictionary of absolute path of the filenames found in that directory"""
 
 	files = {}
 	dictionaryOfAbsPathForXMLs = {}
@@ -26,7 +28,9 @@ def retreiveXMLFilesAndTheirAbsPath(XMLFolder):
 
 def CreateDirectoryForSoftwarePackage(softwarePackageName):
 
-	"""This function creates a folder for software package imported through data source in workFiles/processedFiles. If the folder already exists, it creates a separate folder for XML scripts with data time apended."""
+	"""This function creates a folder for software package imported through data source in workFiles/processedFiles. 
+	If the folder already exists, it creates a separate folder for XML scripts with data time apended.
+	Returns the dirName and the XML scripts directory."""
 
 	dirName = os.path.join(os.path.dirname(__file__), '..', 'workFiles', 'processedFiles',softwarePackageName)
 	XMLScriptDirectory = ''
@@ -49,7 +53,8 @@ def CreateDirectoryForSoftwarePackage(softwarePackageName):
 
 def GenerateScriptForCommandNameInSoftwarePackageFolder(XMLScriptDirectory,commandName):
 
-	"""This function creates an XML file for an individual command processed in the originating master XML Data Source."""
+	"""This function creates an XML file for an individual command processed in the originating master XML Data Source.
+	Returns the file object for the created xml script file."""
 
 	fileName = commandName + ".xml"
 	filePath = os.path.join(XMLScriptDirectory,fileName)
@@ -59,7 +64,8 @@ def GenerateScriptForCommandNameInSoftwarePackageFolder(XMLScriptDirectory,comma
 
 def parseXMLScript(commandScript):
 
-	"""This function parses the XML Script and returns the XML tree"""		
+	"""This function parses the XML Script and returns the XML tree.
+	Returns the tree of the parsed XML source script."""
 
 	#Import the XML Script File
 	tree = ETProc.parse(commandScript)
@@ -92,9 +98,6 @@ def printArgsBasedOnIndex(listOfCommandArg, listOfIndex):
 				printString = printString + " Takes in values: " + commandVal.text
 			else:
 				break
-#		for commandVal in listOfCommandArg[val].iter('importsFrom'):
-#			printString = printString + " Has imports tag from command: " + commandVal.text + "."
-#			break
 
 		for commandDep in listOfCommandArg[val].iter('additionalMandDependantArgument'):
 			printString = printString + " Has mandatory dependant argument elements."
@@ -113,32 +116,27 @@ def printBehaviourMappingTechnique():
 
 def printDynamicMappingTechnique():
 	
+	"This also a simple text print message that are called from multiple places."""
+
 	print("Please note that if a command takes mutiple arguments as dependant parameters. Pass them with semicolons(;) to generate similar test scripts.")
 
 def getListOfValues(text):
+
+	"""This method processes the string in the command script containing the parameter values.
+	Returns a list/string of parameter values."""
+
 	if ';' in text:
 		listOfText = text.split(';')
-#TODO:need to handle range
+	#TODO:need to handle range
 		return listOfText
 	else:
 		return text
 
-def writeFile(pathForFile,modifiedTree):
-
-	"""This function simply removes the existing file in the directory and recreates it with the modified tree structure"""
-
-	os.remove(pathForFile)
-	modifiedTree.write(pathForFile)
-
-def procXMLScrpt(FileName,packageName):
-	procCommandScrpt = processCommandScript(FileName,packageName)
-	procCommandScrpt.getArguments()
-	procCommandScrpt.getArgumentValues()
-	procCommandScrpt.processArguments()
-
-	return procCommandScrpt
-
 def createOutputFile(commandName,outputLocation):
+	
+	"""This method creates the output file based on the command name found inside the script that is being processed and time stamps it at the output location as passed.
+	Returns the file object of the output file."""
+
 	now = datetime.datetime.now()
 	fileName = commandName + '_' + now.strftime("%Y%m%d_%H:%M")
 	fileNamePath = os.path.join(outputLocation, fileName)
@@ -147,49 +145,30 @@ def createOutputFile(commandName,outputLocation):
 	return file
 
 def RunScript(commandString):
+
+	"""Runs a command string.
+	Returns the object of Popen once the command is run."""
+
 	p = subprocess.Popen(commandString,shell=True,stdout = subprocess.PIPE,stderr = subprocess.PIPE)
 	return p
 
 def runImportScript(commandScript,packageName):
+
+	"""Runs the commandScript.
+	Returns the object of POPEN after the run."""
+
 	procImpScript = processCommandScript(commandScript,packageName)
 	procImpScript.getArguments()
 	commandString = procImpScript.packageName + ' ' + procImpScript.commandName
 	p = RunScript(commandString)
 	return p
 
-def writeAndRun(outputFile,commandString):
-	outputFile.write(commandString)
-	outputFile.write("\n")
-	p = RunScript(commandString)
-	output, err = p.communicate()
-	if output.decode('ascii') == '':
-		outputFile.write(err.decode('ascii'))
-	else:
-		outputFile.write(output.decode('ascii'))
-	outputFile.write("\n")
-	
-
-def generateAndRunScripts(comdScrpt,outputLocation, packageName):
-	outputFile = createOutputFile(comdScrpt.commandName,outputLocation)
-	commandString = packageName + ' ' + comdScrpt.commandName 
-	writeAndRun(outputFile,commandString)	
-	for elements in comdScrpt.dictionaryOfArgumentsAndTheirValues:
-		modCommandString = commandString + ' ' +elements
-		writeAndRun(outputFile,modCommandString)
-		if isinstance(comdScrpt.dictionaryOfArgumentsAndTheirValues[elements],str):
-			modCommandString1 = modCommandString + ' ' + comdScrpt.dictionaryOfArgumentsAndTheirValues[elements]
-			writeAndRun(outputFile,modCommandString1)
-			del modCommandString1
-		elif isinstance(comdScrpt.dictionaryOfArgumentsAndTheirValues[elements],list):
-			for val in comdScrpt.dictionaryOfArgumentsAndTheirValues[elements]:
-				modCommandString2 = modCommandString + ' ' + val
-				writeAndRun(outputFile,modCommandString2)
-				del modCommandString2
-		del modCommandString
-
-	outputFile.close()
-
 def createTempFile(commandName,tempLocation):
+
+	"""Creates the tempfiles in the directory of tempLocation where the scripts are to be generated with the script name as that
+	of the command for which the script is being run. Date and Timestamps are appended to them.
+	Returns the tempFile Object and the fileNamePath."""
+
 	now = datetime.datetime.now()
 	fileName = commandName + '_' + now.strftime("%Y%m%d_%H:%M")
 	fileNamePath = os.path.join(tempLocation, fileName)
@@ -198,6 +177,10 @@ def createTempFile(commandName,tempLocation):
 	return tempFile, fileNamePath
 	
 def extractData(paramText,output):
+	
+	"""Extracts the data from the output file object based on the param text passed.
+	Returns the listOfData extracted."""
+	
 	listOfData = []
 	for line in output.split(os.linesep):
 		if paramText.upper() in line.upper():
@@ -206,6 +189,10 @@ def extractData(paramText,output):
 	return list(set(listOfData))
 
 def findPackageName(absolutePathOfCommandScript):
+	
+	"""Finds the package name of the software package in which the command script resides.
+	Returns the package Name."""
+
 	head, tail = ntpath.split(absolutePathOfCommandScript)
 	head1, tail1 = ntpath.split(head)
 	head2, tail2 = ntpath.split(head1)
@@ -214,6 +201,8 @@ def findPackageName(absolutePathOfCommandScript):
 	return tail2
 
 def runTempScripts(outputFileObj,tempFile):
+
+	"Run each of the scripts found in the temp script and writes them in the output file object."""
 
 	f = open(tempFile,'r')
 	for eachLine in f:
@@ -229,6 +218,9 @@ def runTempScripts(outputFileObj,tempFile):
 	
 
 class processCommandScript():
+
+	"""This is a a class which facilitates the processing of a command script."""
+
 	def __init__(self,fileName,packageName):
 		self.fileName = fileName
 		self.packageName = packageName
