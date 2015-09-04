@@ -311,7 +311,9 @@ def defineExportBehaviour(commandIndexOf,commandIndexTo, exportCommand, dictiona
 				print("Modifying already existing import tag.")
 				(treeForCommand.root[indvAdd].find('importsFrom')).text = commandName
 
-		UTIL.writeFile(dictionaryOfCommandsScriptAbsolutePath[eachIndexOfCommandScript], treeForCommand.commandTree)
+		os.remove(dictionaryOfCommandsScriptAbsolutePath[eachIndexOfCommandScript])
+		treeForCommand.commandTree.write(dictionaryOfCommandsScriptAbsolutePath[eachIndexOfCommandScript])
+
 
 
 class modifyTree():

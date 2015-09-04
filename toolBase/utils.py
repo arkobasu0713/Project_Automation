@@ -240,6 +240,7 @@ class processCommandScriptMod():
 			self.listOfParameters.append(commandArg.text)
 
 	def getArgumentsDet(self):
+	#This method processes each of the command arguments found in the script and generates the parameter values and also looks for dependant arguments
 		for commandArg in self.listOfArguments:
 			parameter = processElement(commandArg)
 			parameter.getParamValue()
@@ -253,6 +254,7 @@ class processCommandScriptMod():
 	
 
 	def generateCommandsAndWriteToScripts(self):
+	#This sub-method processes the command script details and generates the temp files which contains all scripts that are generated from the source XML
 		commandString = self.packageName + ' ' + self.commandName
 		for parameter in self.listOfParameters:
 			commandStringWithParam = commandString + ' ' + parameter
@@ -274,6 +276,7 @@ class processCommandScriptMod():
 		self.tempFile.close()		
 
 class processParameter():
+	#This class is for processing the parameter inside the XML scripts
 	def __init__(self,parameter,mandArgs,optArgs,dictOfParameter):
 		self.parameter = parameter
 		self.mandArgs = mandArgs
@@ -285,6 +288,7 @@ class processParameter():
 		self.listOfPrintStrings = []
 
 	def paramVal(self):
+	#This method finds the command argument values
 		if isinstance(self.dictOfParameter[self.parameter],str):
 			self.listOfParamValueStrings.append(self.parameter + ' ' + self.dictOfParameter[self.parameter])
 		else:
@@ -294,6 +298,7 @@ class processParameter():
 #		print(self.listOfParamValueStrings)
 
 	def mandArg(self):
+	#This method processes all the mandatory arguments and pushes them on to a list and creates all combinations of possible strings
 		for eachMandArg in self.mandArgs:
 			if isinstance(eachMandArg,str):
 				if isinstance(self.dictOfParameter[eachMandArg],str):
@@ -321,6 +326,7 @@ class processParameter():
 #		print(self.listOfMandStrings)	
 
 	def optArg(self):
+	#This method processes all the optional arguments and pushes them on to a list and creates all combinations of possible strings
 		for eachOptArg in self.optArgs:
 			if isinstance(eachOptArg,str):
 				if isinstance(self.dictOfParameter[eachOptArg],str):
@@ -348,6 +354,7 @@ class processParameter():
 #		print(self.listOfOptStrings)	
 
 	def processPrintString(self):
+	#This method creates all the possible combinations of command strings found for tha parameter along with their parameter values, extracted data from import scripts, mandatory arguments and optional arguments.
 		masterList = []
 		masterList.append(self.listOfParamValueStrings)
 		if self.listOfMandStrings != []:
@@ -371,6 +378,7 @@ class processParameter():
 		self.listOfPrintStrings.sort()
 
 class processElement():
+	#This class is for processing an element found in the XML Script
 	def __init__(self,element):
 		self.elem = element
 		self.parameter = self.elem.text
@@ -386,6 +394,8 @@ class processElement():
 		self.listOfOptParameters = []
 		
 	def hasMandOpt(self):
+	#This process is to look for any child elements of mandatory/optional arguments in within the processed element.
+	#On finding such a child element, the data is extracted and pushed into a list
 		for childNum in range(self.numOfChildren):
 			if self.elem[childNum].tag == 'additionalMandDependantArgument':
 				self.hasMand = 'Y'
@@ -411,6 +421,7 @@ class processElement():
 				
 
 	def hasImports(self):
+	#This method is for finding if the element contains any import script. In case it does, that script is run and the data is extracted from the output to be passed on as the parameter values
 		for childNum in range(self.numOfChildren):
 			if self.elem[childNum].tag == 'importsFrom':
 				self.hasImportsFrom = 'Y'
@@ -426,6 +437,7 @@ class processElement():
 
 
 	def getParamValue(self):
+	#This method is for processing the element and extracting their parameter values if there is any.
 		for paramValue in self.elem.findall('parametervalues'):
 			if paramValue.text not in ['None','NA']:
 				self.paramValues = getListOfValues(paramValue.text)
@@ -434,6 +446,9 @@ class processElement():
 		
 
 def procXMLScrpt1(commandScript,outputLocation,tempLocation):
+
+	#This function has multiple method calls which processes the command script and generate temp script files with all executable commands and also runs them against the system and generates output logs
+
 	procCommandScrpt = processCommandScriptMod(commandScript)
 	procCommandScrpt.getArguments()
 	procCommandScrpt.getArgumentsDet()
