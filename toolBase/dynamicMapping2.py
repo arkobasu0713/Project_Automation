@@ -66,8 +66,8 @@ def processCommandsWithNAValues(treeForCommand):
 
 def processCommandsWithNoneValues(treeForCommand,fileDictionary,dictionaryOfAbsPath):
 
-	"""This function processes the tree extracted from the command script to modify the behaviour of command arguments with "NONE" parametervalues.
-	Returns the modified tree structure."""
+#	"""This function processes the tree extracted from the command script to modify the behaviour of command arguments with "NONE" parametervalues.
+#	Returns the modified tree structure."""
 
 	define = 'Y'
 	while define == 'Y':
@@ -109,8 +109,8 @@ def processCommandsWithNoneValues(treeForCommand,fileDictionary,dictionaryOfAbsP
 
 def addExtraParameterValues(treeForCommand):
 
-	"""This function processes a tree extracted from a command script to add any additional parameter values to any of the command arguments at the discretion of the user/tester.
-	Returns the modified tree structure."""
+#	"""This function processes a tree extracted from a command script to add any additional parameter values to any of the command arguments at the discretion of the user/tester.
+#	Returns the modified tree structure."""
 
 	add = 'Y'
 	while add == 'Y':
@@ -142,8 +142,8 @@ def addExtraParameterValues(treeForCommand):
 
 def multipleDependency(treeForCommand):
 
-	"""This function facilitates the user to map multiple dependencies of one command argument to any(one or more) command arguments found inside a script.
-	Returns the modified tree structure."""
+#	"""This function facilitates the user to map multiple dependencies of one command argument to any(one or more) command arguments found inside a script.
+#	Returns the modified tree structure."""
 
 	add = 'Y'
 	while add == 'Y':
@@ -188,8 +188,8 @@ def multipleDependency(treeForCommand):
 
 def checkAllCommands(treeForCommand,fileDictionary,dictionaryOfCommandsScriptAbsolutePath):
 
-	"""This function gives a final round of user choice to modify/add behaviours of any command argument found inside the script before exiting the dynamic mapping procedure.
-	Returns the modified tree structure."""
+#	"""This function gives a final round of user choice to modify/add behaviours of any command argument found inside the script before exiting the dynamic mapping procedure.
+#	Returns the modified tree structure."""
 
 	add = 'Y'
 	while add == 'Y':
@@ -255,10 +255,10 @@ def checkAllCommands(treeForCommand,fileDictionary,dictionaryOfCommandsScriptAbs
 
 def defineBehaviourOfCommand(commandScript,fileDictionary,dictionaryOfCommandsScriptAbsolutePath):
 
-	"""This function processes a command script and facilitates all kinds of dynamic mappings inside the script. Based on the functions
-	it modifies the command script(XML) to generate a new script in the same location.
-	Note that this function only creates a modified file once all the corresponding sub-methods have run successfully and there was no exception thrown.
-	It returns the modified tree structure."""
+#	"""This function processes a command script and facilitates all kinds of dynamic mappings inside the script. Based on the functions
+#	it modifies the command script(XML) to generate a new script in the same location.
+#	Note that this function only creates a modified file once all the corresponding sub-methods have run successfully and there was no exception thrown."""
+
 
 	treeForCommand = command(commandScript)
 	treeForCommand.getCommandArguments()
@@ -284,15 +284,13 @@ def defineBehaviourOfCommand(commandScript,fileDictionary,dictionaryOfCommandsSc
 	
 	
 
+	os.remove(commandScript)
+	treeForCommand.commandTree.write(commandScript)
 	
-	
-	return treeForCommand.commandTree
-
-
 def defineExportBehaviour(commandIndexOf,commandIndexTo, exportCommand, dictionaryOfCommandsScriptAbsolutePath):
 
-	"""This function defines the export behaviour of a single command to multiple commands found inside the software package directory in one go.
-	This function is done in order to reduce the redundancy of defining export/import behaviour of multiple command arguments in one go."""
+#	"""This function defines the export behaviour of a single command to multiple commands found inside the software package directory in one go.
+#	This function is done in order to reduce the redundancy of defining export/import behaviour of multiple command arguments in one go."""
 
 	listOfCommandsIndexToString = commandIndexTo.split(';')
 	listOfCommandsIndexTo = [int(i) for i in listOfCommandsIndexToString]
@@ -318,9 +316,9 @@ def defineExportBehaviour(commandIndexOf,commandIndexTo, exportCommand, dictiona
 
 class modifyTree():
 
-	"""This is a class where the argument is a Tree.
-	The submethods of this class are for the modification of the structure of the tree as per the fucntionalities described in the comment section
-	of each of the submethods."""
+#	"""This is a class where the argument is a Tree.
+#	The submethods of this class are for the modification of the structure of the tree as per the fucntionalities described in the comment section
+#	of each of the submethods."""
 
 	def __init__(self,tree, commandArgList):
 		self.tree = tree
@@ -332,7 +330,9 @@ class modifyTree():
 		self.importsFromTag = 'importsFrom'
 
 	def modifyAdditionalMandatoryGrandChild(self,modifyCommandArg, depMandCommand):
-	"""This submethod creates additional mandatory argument child in the parameter on being called. It appends the arguments in case there is already one existing."""
+	
+#	"""This submethod creates additional mandatory argument child in the parameter on being called. It appends the arguments in case there is already one existing."""
+
 		text = ''
 		for i in depMandCommand:
 			text = text + self.listOfCommandArg[i].text + ';'
@@ -348,7 +348,8 @@ class modifyTree():
 	
 				
 	def modifyAdditionalOptionalGrandChild(self,modifyCommandArg, depOptCommand):
-	"""This submethod creates additional optional argument child in the parameter on being called. It appends the arguments in case there is already one existing."""
+
+#	"""This submethod creates additional optional argument child in the parameter on being called. It appends the arguments in case there is already one existing."""
 		text = ''
 		for i in depOptCommand:
 			text = text + self.listOfCommandArg[i].text + ';'
@@ -362,13 +363,13 @@ class modifyTree():
 			childNode.text = text
 
 	def modifyManualArgument(self, index, manualEntry):
-	"""This submethod adds a manual entry of parameter values to the parameters."""
+#	"""This submethod adds a manual entry of parameter values to the parameters."""
 		for commandArgVal in self.root[index].iter('parametervalues'):
 			commandArgVal.text = manualEntry
 
 	def modifyImportArgument(self,index,commandName):
-	"""This submethod adds the absolute path of the script that needs to be run from which the data of parameter values for the parameter name is to be extacted.
-	It changes the script path in case there is already an existing one."""
+#	"""This submethod adds the absolute path of the script that needs to be run from which the data of parameter values for the parameter name is to be extacted.
+#	It changes the script path in case there is already an existing one."""
 	#TODO: add attributes so as to extract dynamic data as mentioned by the user other than the parameter name
 
 		if self.root[index].find(self.importsFromTag) is None:
@@ -379,7 +380,7 @@ class modifyTree():
 			(self.root[index].find(self.importsFromTag)).text = commandName
 
 	def addValues(self,index,addValue):
-	"""This method adds new parameter values/appends to existing values."""
+#	"""This method adds new parameter values/appends to existing values."""
 		for commandArg in self.root[index].iter('parametervalues'):
 			if commandArg.text == 'None':
 				commandArg.text = addValue
@@ -390,8 +391,8 @@ class modifyTree():
 			
 
 class command():
-	"""This is a class where the command script is provided as an argument, which is then parsed into an XML structured tree.
-	This funtion has several sub-methods which are elaborately explained in each case."""
+#	"""This is a class where the command script is provided as an argument, which is then parsed into an XML structured tree.
+#	This funtion has several sub-methods which are elaborately explained in each case."""
 	def __init__(self,commandScript):
 		self.commandScript = commandScript
 		self.commandTree = UTIL.parseXMLScript(self.commandScript)
@@ -407,29 +408,29 @@ class command():
 		self.listOfCommandsWithNoneValue = []
 
 	def getCommandArguments(self):
-	"""This submethod retrieves all the parameters under a command script and pushes them on to a list"""
+#	"""This submethod retrieves all the parameters under a command script and pushes them on to a list"""
 		for commandArg in self.root:
 			self.listOfCommandArg.append(commandArg)
 
 	def getCommandArgumentsValues(self):
-	"""This submethod retrieves all the paremeter values in each of the parameters found in the list build from the above method"""
+#	"""This submethod retrieves all the paremeter values in each of the parameters found in the list build from the above method"""
 		for commandArg in self.listOfCommandArg:
 			for commandArgVal in commandArg.iter('parametervalues'):
 				self.listOfCommandArgValues.append(commandArgVal)
 				break
 
 	def printCommandName(self):
-	"""This method simply prints the command for which the script is being processed."""
+#	"""This method simply prints the command for which the script is being processed."""
 		print("Command: " + str(self.command))
 		
 	def checkForNAValues(self):
-	"""This submethod looks for parameter values of NA which signifies that the command argument doesn't take any values."""
+#	"""This submethod looks for parameter values of NA which signifies that the command argument doesn't take any values."""
 		for indVal in range(len(self.listOfCommandArgValues)):
 			if (self.listOfCommandArgValues[indVal].text) == 'NA':
 				self.listOfIndexOfCommandsWithNAValues.append(indVal)
 
 	def checkForNoArgValues(self):
-	"""This submethid looks for parameter values of None which signifies that the commang argument had no parameter values inside the script."""
+#	"""This submethid looks for parameter values of None which signifies that the commang argument had no parameter values inside the script."""
 		for indVal in range(len(self.listOfCommandArgValues)):
 			if (self.listOfCommandArgValues[indVal].text) == 'None':
 				self.listOfIndexOfCommandsWithNoneValue.append(indVal)
@@ -437,10 +438,10 @@ class command():
 
 class processSoftwarePackageXMLs(object):
 
-	"""This is the entry point of the program where the dynamic mapping module of scripts discovered under the software package is run for.
-	This function allows the user to indvidually modify each command XML script, or define multiple dependencies in one go. However the multiple dependencies
-	module is far more losely developed for defining only single dependencies like exporting data from-to. whereas the single command script mapping procedure is
-	much more elaborate and extends from capabilities of adding extra parameter values, defining import data from foreign scripts, to adding dependant arguments(mandatory/optional)"""
+#	"""This is the entry point of the program where the dynamic mapping module of scripts discovered under the software package is run for.
+#	This function allows the user to indvidually modify each command XML script, or define multiple dependencies in one go. However the multiple dependencies
+#	module is far more losely developed for defining only single dependencies like exporting data from-to. whereas the single command script mapping procedure is
+#	much more elaborate and extends from capabilities of adding extra parameter values, defining import data from foreign scripts, to adding dependant arguments(mandatory/optional)"""
 
 	def __init__(self, dirName):
 		print("In procedure for dynamic mapping")
@@ -470,9 +471,7 @@ class processSoftwarePackageXMLs(object):
 
 				elif option == 'B':
 					commandIndexOf = int(input("Enter the command serial from the above list that you wish to define argument dependencies on: "))
-					modifiedTree = defineBehaviourOfCommand(self.dictionaryOfCommandsScriptAbsolutePath[commandIndexOf], self.fileDictionary, self.dictionaryOfCommandsScriptAbsolutePath)
-					if modifiedTree is not None:
-						UTIL.writeFile(self.dictionaryOfCommandsScriptAbsolutePath[commandIndexOf], modifiedTree)
+					defineBehaviourOfCommand(self.dictionaryOfCommandsScriptAbsolutePath[commandIndexOf], self.fileDictionary, self.dictionaryOfCommandsScriptAbsolutePath)
 	
 				elif option == 'X':
 					break

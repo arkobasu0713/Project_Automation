@@ -157,8 +157,7 @@ def runImportScript(commandScript,packageName):
 	"""Runs the commandScript.
 	Returns the object of POPEN after the run."""
 
-	procImpScript = processCommandScript(commandScript,packageName)
-	procImpScript.getArguments()
+	procImpScript = processCommandScriptMod(commandScript)
 	commandString = procImpScript.packageName + ' ' + procImpScript.commandName
 	p = RunScript(commandString)
 	return p
@@ -217,69 +216,8 @@ def runTempScripts(outputFileObj,tempFile):
 		outputFileObj.write("\n")
 	
 
-class processCommandScript():
-
-	"""This is a a class which facilitates the processing of a command script."""
-
-	def __init__(self,fileName,packageName):
-		self.fileName = fileName
-		self.packageName = packageName
-		self.tree = parseXMLScript(self.fileName)
-		self.root = self.tree.getroot()
-		self.listOfArguments = []
-		self.listOfArgumentVal = []
-		self.commandName = self.root.text
-		self.dictOfMandArg = {}
-		self.dictOfOptArg = {}
-		self.dictionaryOfArgumentsAndTheirValues = {}
-		self.dictOfParamImport = {}
-
-	def getArguments(self):
-		for commandArg in self.root:
-			self.listOfArguments.append(commandArg)
-		
-	def getArgumentValues(self):
-		for commandArgVal in self.listOfArguments:
-			self.listOfArgumentVal = commandArgVal.find('parametervalues')
-		
-	def processListOfArguments(self):
-		for index in range(len(self.listOfArguments)):
-			commandtext = self.listOfArguments[index].text
-			self.dictionaryOfArgumentsAndTheirValues[commandtext] = getListOfValues(self.listOfArgumentVal[index].text)
-
-	def processArguments(self):
-		for element in self.listOfArguments:
-			paramText = element.text
-			for subElem in element.iter('parametervalues'):
-				if subElem.text == 'None':
-					for subElemImport in element.iter('importsFrom'):
-						print("Imports From: " + subElemImport.text)
-						p = runImportScript(subElemImport.text,self.packageName)
-						output, err = p.communicate()
-						if output.decode('ascii') == '':
-							print('Import Command for ' + paramText + "Had a Run Error as followed: " + err.decode('ascii'))
-						else:
-							self.dictionaryOfArgumentsAndTheirValues[paramText] = extractData(paramText.strip('-'),output.decode('ascii'))
-						self.dictOfParamImport[paramText] = subElemImport.text
-					break
-				else:
-					self.dictionaryOfArgumentsAndTheirValues[paramText] = getListOfValues(subElem.text)
-					break
-			for subElem in element.iter('additionalMandDependantArgument'):
-				self.dictOfMandArg[paramText] = subElem
-				break
-			for subElem in element.iter('additionalOptDependantArgument'):
-				self.dictOfOptArg[paramText] = subElem
-				break
-
-		print(self.dictionaryOfArgumentsAndTheirValues)
-		print(self.dictOfMandArg)
-		print(self.dictOfOptArg)
-		print(self.dictOfParamImport)
-
-
-
 class processCommandScriptMod():
+	#This class to process the command script
 	def __init__(self,fileName):
 		self.fileName = fileName
 		self.packageName = findPackageName(self.fileName)
@@ -296,6 +234,7 @@ class processCommandScriptMod():
 		self.tempFileNamePath = None
 		
 	def getArguments(self):
+	#This method gets the list of argument elements in the xml and the text in within those elements
 		for commandArg in self.root:
 			self.listOfArguments.append(commandArg)
 			self.listOfParameters.append(commandArg.text)
@@ -313,17 +252,7 @@ class processCommandScriptMod():
 				self.dictionaryOfOptParameters[parameter.parameter] = parameter.listOfOptParameters
 	
 
-	def printDetailsOfCommandScript(self):
-		print(self.listOfParameters)
-		print(self.dictOfParameter)
-		print(self.dictionaryOfMandParameters)
-		print(self.dictionaryOfOptParameters)
-		print(self.listOfOutputStrings)
-
-
 	def generateCommandsAndWriteToScripts(self):
-#		outputFile = createOutputFile(self.commandName,outputLocation)
-#		self.tempFile, self.tempFileNamePath = createTempFile(self.commandName, tempLocation)
 		commandString = self.packageName + ' ' + self.commandName
 		for parameter in self.listOfParameters:
 			commandStringWithParam = commandString + ' ' + parameter
