@@ -15,6 +15,9 @@ from xml.etree.ElementTree import Element, SubElement, tostring
 from toolBase import utils as UTIL
 
 def LookForDataSource():
+
+	"""This function looks for data sources in SampleFiles folder to start the script with if no command line arguments have not been provided for compiling source"""
+
 	filePath = os.path.join(os.path.dirname(__file__), 'workFiles','sampleFiles')
 	listOfFileNames = []
 	for dirpath, dirnames, filenames in os.walk(filePath):
@@ -25,12 +28,17 @@ def LookForDataSource():
 	return listOfFileNames
 
 def ProcessXMLDataSource(xmlDataSource):
+
+	"""This fucntion calls the method from toolsBase/main.py to process the original XML sample data source containing the software package details"""
+
 	importedSoftPackg = ImportXMLSampleSource(xmlDataSource)
 	
 	return importedSoftPackg
 
 def XMLDirectoryForSoftwarePackage(softwarePackageDirectory):
+
 	"""This function returns the XML Script directory under the software package"""
+
 	choiceDir = 0
 	dirnames1 = os.listdir(softwarePackageDirectory)
 	listOfIndex = []
@@ -50,6 +58,7 @@ def XMLDirectoryForSoftwarePackage(softwarePackageDirectory):
 	return dirName
 
 
+#This is the starting point of the entire test framework. This is where the command line startup arguments are defined, and based on that the processing is triggerred.
 if __name__ == "__main__":
 	
 	parser = argparse.ArgumentParser(description="Generic Automated System test tool")
@@ -73,7 +82,7 @@ if __name__ == "__main__":
 			print(list(enumerate(listOfXMLDataSource)))
 			while True:
 				try:
-					yesOrNo = (input("Do you wish to proceed with any of the above data sources? (Y/N) : ")).upper()
+					yesOrNo = (input("Do you wish to proceed with any of the above data sources(Y)? Or do you wish to continue into framework(N) : ")).upper()
 					if yesOrNo == 'Y':
 						sourceNum = int(input("Enter the serial number from the above list, of which one do you wish to proceed with? : "))
 						#handle number entered for parsing source XML Script
