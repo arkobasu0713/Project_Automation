@@ -10,7 +10,11 @@ from xml.etree.ElementTree import Element, SubElement, tostring
 import xml.dom.minidom as MNDOM
 from . import utils as UTIL
 
-def ProcessElement(element,dirName,XMLScriptDirectory):
+def ProcessElement(element,XMLScriptDirectory):
+
+	"""This function processes each of the elements found under the root of the original XML Data source 
+	and creates child tags based on the parameters to create separate files and write then in the XML directory"""
+
 	paramTag = 'parameter'
 	paramValTag = 'parametervalues'
 	for elementContent in element:
@@ -64,14 +68,14 @@ class ImportXMLSampleSource(object):
 
 		print("Software Package detected in sample XML Source: " + self.root.tag)
 		self.dirName, self.XMLScriptDirectory = UTIL.CreateDirectoryForSoftwarePackage(self.root.tag)
-		CreateIndividualFilesForRootElement(self.root, self.dirName, self.XMLScriptDirectory)
+		CreateIndividualFilesForRootElement(self.root, self.XMLScriptDirectory)
 		print("At this point, the input data source has been processed and the correspoding individual XML scripts have been generated in " + self.XMLScriptDirectory)
 		print("Please verify the XML files in the above mentioned folder.")
 
-def CreateIndividualFilesForRootElement(rootElement,dirName,XMLScriptDirectory):
+def CreateIndividualFilesForRootElement(rootElement,XMLScriptDirectory):
 	"""This Function processes the XML tree and creates separate card/XML files for each of the command suits"""
 	for index in range((len(rootElement)-1)+1):
-		ProcessElement(rootElement[index], dirName, XMLScriptDirectory)
+		ProcessElement(rootElement[index], XMLScriptDirectory)
 
 		
 

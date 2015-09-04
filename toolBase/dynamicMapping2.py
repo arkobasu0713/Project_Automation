@@ -138,6 +138,9 @@ def addExtraParameterValues(treeForCommand):
 	return treeForCommand.commandTree
 
 def multipleDependency(treeForCommand):
+
+	"""This function facilitates the user to map multiple dependencies of one command argument to any(one or more) command arguments found inside a script"""
+
 	add = 'Y'
 	while add == 'Y':
 		modTree = modifyTree(treeForCommand.commandTree, treeForCommand.listOfCommandArg)
@@ -180,6 +183,9 @@ def multipleDependency(treeForCommand):
 	return treeForCommand.commandTree
 
 def checkAllCommands(treeForCommand,fileDictionary,dictionaryOfCommandsScriptAbsolutePath):
+
+	"""This function gives a final round of user choice to modify/add behaviours of any command argument found inside the script before exiting the dynamic mapping procedure."""
+
 	add = 'Y'
 	while add == 'Y':
 		modTree = modifyTree(treeForCommand.commandTree, treeForCommand.listOfCommandArg)
@@ -243,6 +249,11 @@ def checkAllCommands(treeForCommand,fileDictionary,dictionaryOfCommandsScriptAbs
 	return treeForCommand.commandTree
 
 def defineBehaviourOfCommand(commandScript,fileDictionary,dictionaryOfCommandsScriptAbsolutePath):
+
+	"""This function processes a command script and facilitates all kinds of dynamic mappings inside the script. Based on the functions
+	it modifies the command script(XML) to generate a new script in the same location.
+	Note that this function only creates a modified file once all the corresponding sub-methods have run successfully and there was no exception thrown."""
+
 	treeForCommand = command(commandScript)
 	treeForCommand.getCommandArguments()
 	treeForCommand.getCommandArgumentsValues()
@@ -273,6 +284,10 @@ def defineBehaviourOfCommand(commandScript,fileDictionary,dictionaryOfCommandsSc
 
 
 def defineExportBehaviour(commandIndexOf,commandIndexTo, exportCommand, dictionaryOfCommandsScriptAbsolutePath):
+
+	"""This function defines the export behaviour of a single command to multiple commands found inside the software package directory in one go.
+	This function is done in order to reduce the redundancy of defining export/import behaviour of multiple command arguments in one go."""
+
 	listOfCommandsIndexToString = commandIndexTo.split(';')
 	listOfCommandsIndexTo = [int(i) for i in listOfCommandsIndexToString]
 
@@ -301,6 +316,11 @@ def defineExportBehaviour(commandIndexOf,commandIndexTo, exportCommand, dictiona
 	
 
 class modifyTree():
+
+	"""This is a class where the argument is a Tree.
+	The submethods of this class are for the modification of the structure of the tree as per the fucntionalities described in the comment section
+	of each of the submethods."""
+
 	def __init__(self,tree, commandArgList):
 		self.tree = tree
 		self.root = self.tree.getroot()
@@ -364,6 +384,8 @@ class modifyTree():
 			
 
 class command():
+	"""This is a class where the command script is provided as an argument, which is then parsed into an XML structured tree.
+	This funtion has several sub-methods which are elaborately explained in each case."""
 	def __init__(self,commandScript):
 		self.commandScript = commandScript
 		self.commandTree = UTIL.parseXMLScript(self.commandScript)
@@ -402,23 +424,13 @@ class command():
 				self.listOfIndexOfCommandsWithNoneValue.append(indVal)
 				self.dictOfCommandImportArg[self.listOfCommandArg[indVal].text] = self.listOfCommandArgValues[indVal].attrib
 
-	def checkForDepArguments(self):
-		for commandArg in self.listOfCommandArg:
-			for commandDepArg in commandArg.iter('additionalMandDependantArgument'):
-				self.listOfCommandDepArgument.append(commandDepArg)
-				break
-
-	def checkForOptArguments(self):
-		for commandArg in self.listOfCommandArg:
-			for commandOptArg in commandArg.iter('additionalOptDependantArgument'):
-				self.listOfCommandOptArgument.append(commandOptArg)
-				break
-
-	def checkForImportDependency(self):
-		for commandArg in self.listOfCommandArgValues:
-			print(commandArg.attrib)
-		
 class processSoftwarePackageXMLs(object):
+
+	"""This is the entry point of the program where the dynamic mapping module of scripts discovered under the software package is run for.
+	This function allows the user to indvidually modify each command XML script, or define multiple dependencies in one go. However the multiple dependencies
+	module is far more losely developed for defining only single dependencies like exporting data from-to. whereas the single command script mapping procedure is
+	much more elaborate and extends from capabilities of adding extra parameter values, defining import data from foreign scripts, to adding dependant arguments(mandatory/optional)"""
+
 	def __init__(self, dirName):
 		print("In procedure for dynamic mapping")
 		self.dirName = dirName
