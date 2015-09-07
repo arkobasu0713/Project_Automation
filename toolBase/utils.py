@@ -27,6 +27,9 @@ def retreiveXMLFilesAndTheirAbsPath(XMLFolder):
 	return files, dictionaryOfAbsPathForXMLs
 
 def verifyProcessedFilesDir():
+
+	"""This fucntion verifies the existance of the ProcessedFiles directory in the source tree. If doesn't exist, it creates the directory"""
+
 	procFileDir = os.path.join(os.path.dirname(__file__),'..','workFiles','processedFiles')
 	if not os.path.exists(procFileDir):
 		print("Processed Files directory missing. Hence creating directory for storing software packages.")		
