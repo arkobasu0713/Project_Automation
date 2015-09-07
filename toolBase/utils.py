@@ -26,6 +26,14 @@ def retreiveXMLFilesAndTheirAbsPath(XMLFolder):
 
 	return files, dictionaryOfAbsPathForXMLs
 
+def verifyProcessedFilesDir():
+	procFileDir = os.path.join(os.path.dirname(__file__),'..','workFiles','processedFiles')
+	if not os.path.exists(procFileDir):
+		print("Processed Files directory missing. Hence creating directory for storing software packages.")		
+		os.mkdir(procFileDir)
+	else:
+		print("Processed Files directory found.")
+
 def CreateDirectoryForSoftwarePackage(softwarePackageName):
 
 	"""This function creates a folder for software package imported through data source in workFiles/processedFiles. 

@@ -63,10 +63,12 @@ if __name__ == "__main__":
 	
 	parser = argparse.ArgumentParser(description="Generic Automated System test tool")
 	parser.add_argument('-d','--dataSource', dest='XMLFileName', help='absolute path for the sample XML data source. If this is not provided, the System proceeds with any already compiled test source that it may find in the working directory. If it does not find that too as well, then it looks for the sampleFiles for any default schema that is stored there.')
-	parser.add_argument('-cL','--createLogs', dest='logFilePath', help='absolute path for the generation of log files. If this is not provided, the System creates the log files in the /workFiles/processedFiles/"SoftwarePackageName"/LogFiles/"CurrentDateTime"')
+	parser.add_argument('-cL','--createLogs', dest='logFilePath', help='absolute path for the generation of log files. If this is not provided, the System creates the log files in the /workFiles/processedFiles/"SoftwarePackageName"/LogFiles/')
+	parser.add_argument('-i','--installPackage', dest='installPackageURL', help='URL for the repository containing the software package that needs to be build on the system. Please note that the program has the capability of only installing rpm packages and tar.gz packages.')
 	args = parser.parse_args()
 	inputDataSource = args.XMLFileName
 	logFilePath = args.logFilePath
+	installationPackageURL = args.installPackageURL
 
 	xmlDataSource = ''
 	dictionaryOfSoftwarePackages = {}
@@ -75,32 +77,42 @@ if __name__ == "__main__":
 	if inputDataSource is not None:
 		xmlDataSource = inputDataSource
 	else:
-		print("No input XML Data source provided in command arguments discovered. Test Suit is checking the sample XML Files folder for any default schema available.")
-		listOfXMLDataSource = LookForDataSource()
-		if len(listOfXMLDataSource) > 0:
-			print("The Sample XML Data sources found in the directory are: ")
-			print(list(enumerate(listOfXMLDataSource)))
-			while True:
-				try:
-					yesOrNo = (input("Do you wish to proceed with any of the above data sources(Y)? Or do you wish to continue into framework(N) : ")).upper()
-					if yesOrNo == 'Y':
-						sourceNum = int(input("Enter the serial number from the above list, of which one do you wish to proceed with? : "))
-						#handle number entered for parsing source XML Script
-						xmlDataSource = listOfXMLDataSource[sourceNum]
-						break
-					elif yesOrNo == 'N':
-						print("Ok. No XML Import to be performed.")
-						break
-				except ValueError:
-					print("Oops! That's not a number. Try Again... ")
+		while True:
+			try:
+				parseOpt = (input("No input XML Data source provided in command arguments discovered. Do you wish to look into source directory for sample XML files to parse?(Y/N): ")).upper()
+				if parseOpt == 'Y':
+					listOfXMLDataSource = LookForDataSource()
+					if len(listOfXMLDataSource) > 0:
+						print("The Sample XML Data sources found in the directory are: ")
+						print(list(enumerate(listOfXMLDataSource)))
+						yesOrNo = (input("Do you wish to proceed with any of the above data sources(Y)? Or do you wish to continue into framework(N) : ")).upper()
+						if yesOrNo == 'Y':
+							sourceNum = int(input("Enter the serial number from the above list, of which one do you wish to proceed with? : "))
+							#handle number entered for parsing source XML Script
+							xmlDataSource = listOfXMLDataSource[sourceNum]
+							break
+						elif yesOrNo == 'N':
+							print("Ok. No XML Import to be performed.")
+							break
+					else:
+						print("No sample XML data source found. This is crazy. I don't have anything to work with. Sorry. I'm done.")
+						sys.exit(0)
+		
+				elif parseOpt == 'N':
+					print("Continuing into framework.")
+					break
 				else:
-					print("Please enter correct option again.")
-		else:
-			print("No sample XML data source found. This is crazy. I don't have anything to work with. Sorry. I'm done.")
-			sys.exit(0)
+					print("Wrong Input. Try again!")
+			except ValueError:
+				print("Oops! That's not a number. Try Again... ")
+			else:
+				print("Please enter correct option again.")	
+			
 
 	if xmlDataSource != '':
 		importSoftPackg = ProcessXMLDataSource(xmlDataSource)
+
+	UTIL.verifyProcessedFilesDir()
 		
 	softwarePackagesStoredInFolderName = os.path.join(os.path.dirname(os.path.realpath(__file__)),'workFiles','processedFiles')
 	dirname = os.listdir(softwarePackagesStoredInFolderName)
