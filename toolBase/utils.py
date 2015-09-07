@@ -48,6 +48,11 @@ def verifySoftwarePackageRPMDir():
 	else:
 		print("Directory for storing RPM files of software packages found.")
 
+def extractRPM(installationPackageURL):
+	
+	"""This function extracts the RPM file for the software package from a remote repository and stores inside RPM software package directory for later use."""
+	print("Extracting file: " + installationPackageURL)
+
 def CreateDirectoryForSoftwarePackage(softwarePackageName):
 
 	"""This function creates a folder for software package imported through data source in workFiles/processedFiles. 

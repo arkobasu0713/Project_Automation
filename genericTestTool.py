@@ -70,6 +70,9 @@ if __name__ == "__main__":
 	logFilePath = args.logFilePath
 	installationPackageURL = args.installPackageURL
 
+	if installationPackageURL is not None:
+		UTIL.extractRPM(installationPackageURL)
+
 	xmlDataSource = ''
 	dictionaryOfSoftwarePackages = {}
 	dictOfPackages = {}
