@@ -28,7 +28,7 @@ def retreiveXMLFilesAndTheirAbsPath(XMLFolder):
 
 def verifyProcessedFilesDir():
 
-	"""This fucntion verifies the existance of the ProcessedFiles directory in the source tree. If doesn't exist, it creates the directory"""
+	"""This function verifies the existance of the ProcessedFiles directory in the source tree. If doesn't exist, it creates the directory"""
 
 	procFileDir = os.path.join(os.path.dirname(__file__),'..','workFiles','processedFiles')
 	if not os.path.exists(procFileDir):
@@ -36,6 +36,17 @@ def verifyProcessedFilesDir():
 		os.mkdir(procFileDir)
 	else:
 		print("Processed Files directory found.")
+
+def verifySoftwarePackageRPMDir():
+	
+	"""This function verifies the existance of the directory used for storing software package's RPM files in within the source tree. If doesn't exist, it creates the directory."""
+
+	softPackRPMDir = os.path.join(os.path.dirname(__file__),'..','workFiles','softwarePackageRPMs')
+	if not os.path.exists(softPackRPMDir):
+		print("Directory for RPM files of software packages not found. Hence creating directory. " + softPackRPMDir)
+		os.mkdir(softPackRPMDir)
+	else:
+		print("Directory for storing RPM files of software packages found.")
 
 def CreateDirectoryForSoftwarePackage(softwarePackageName):
 

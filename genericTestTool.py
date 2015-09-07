@@ -113,6 +113,7 @@ if __name__ == "__main__":
 		importSoftPackg = ProcessXMLDataSource(xmlDataSource)
 
 	UTIL.verifyProcessedFilesDir()
+	UTIL.verifySoftwarePackageRPMDir()
 		
 	softwarePackagesStoredInFolderName = os.path.join(os.path.dirname(os.path.realpath(__file__)),'workFiles','processedFiles')
 	dirname = os.listdir(softwarePackagesStoredInFolderName)
