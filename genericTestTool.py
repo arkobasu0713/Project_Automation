@@ -77,6 +77,10 @@ if __name__ == "__main__":
 	dictionaryOfSoftwarePackages = {}
 	dictOfPackages = {}
 
+	UTIL.verifyProcessedFilesDir()
+	UTIL.verifySoftwarePackageRPMDir()
+
+
 	if inputDataSource is not None:
 		xmlDataSource = inputDataSource
 	else:
@@ -115,9 +119,6 @@ if __name__ == "__main__":
 	if xmlDataSource != '':
 		importSoftPackg = ProcessXMLDataSource(xmlDataSource)
 
-	UTIL.verifyProcessedFilesDir()
-	UTIL.verifySoftwarePackageRPMDir()
-		
 	softwarePackagesStoredInFolderName = os.path.join(os.path.dirname(os.path.realpath(__file__)),'workFiles','processedFiles')
 	dirname = os.listdir(softwarePackagesStoredInFolderName)
 
