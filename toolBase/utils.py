@@ -165,7 +165,7 @@ def createOutputFile(commandName,outputLocation):
 	Returns the file object of the output file."""
 
 	now = datetime.datetime.now()
-	fileName = commandName + '_' + now.strftime("%Y%m%d_%H:%M")
+	fileName = commandName + '_' + now.strftime("%Y%m%d_%H%M")+".txt"
 	fileNamePath = os.path.join(outputLocation, fileName)
 	file = open(fileNamePath, 'wt')
 
