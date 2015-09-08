@@ -196,7 +196,7 @@ def createTempFile(commandName,tempLocation):
 	Returns the tempFile Object and the fileNamePath."""
 
 	now = datetime.datetime.now()
-	fileName = commandName + '_' + now.strftime("%Y%m%d_%H:%M")
+	fileName = commandName + '_' + now.strftime("%Y%m%d_%H:%M")+".txt"
 	fileNamePath = os.path.join(tempLocation, fileName)
 	tempFile = open(fileNamePath, 'wt')
 
