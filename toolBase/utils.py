@@ -48,11 +48,6 @@ def verifySoftwarePackageRPMDir():
 	else:
 		print("Directory for storing RPM files of software packages found.")
 
-def extractRPM(installationPackageURL):
-	
-	"""This function extracts the RPM file for the software package from a remote repository and stores inside RPM software package directory for later use."""
-	print("Extracting file: " + installationPackageURL)
-
 def CreateDirectoryForSoftwarePackage(softwarePackageName):
 
 	"""This function creates a folder for software package imported through data source in workFiles/processedFiles. 
@@ -165,7 +160,7 @@ def createOutputFile(commandName,outputLocation):
 	Returns the file object of the output file."""
 
 	now = datetime.datetime.now()
-	fileName = commandName + '_' + now.strftime("%Y%m%d_%H%M")+".txt"
+	fileName = commandName + '_' + now.strftime("%Y%m%d_%H%M") + ".txt"
 	fileNamePath = os.path.join(outputLocation, fileName)
 	file = open(fileNamePath, 'wt')
 
@@ -196,7 +191,7 @@ def createTempFile(commandName,tempLocation):
 	Returns the tempFile Object and the fileNamePath."""
 
 	now = datetime.datetime.now()
-	fileName = commandName + '_' + now.strftime("%Y%m%d_%H%M")+".txt"
+	fileName = commandName + '_' + now.strftime("%Y%m%d_%H%M") + ".txt"
 	fileNamePath = os.path.join(tempLocation, fileName)
 	tempFile = open(fileNamePath, 'wt')
 

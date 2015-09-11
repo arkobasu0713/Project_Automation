@@ -86,7 +86,7 @@ if __name__ == "__main__":
 	else:
 		while True:
 			try:
-				parseOpt = (input("No input XML Data source provided in command arguments discovered. Do you wish to look into source directory for sample XML files to parse?(Y/N): ")).upper()
+				parseOpt = (input("No input XML Data source provided in command arguments discovered. Do you wish to look into source directory for sample XML files to parse?(Y): ")).upper()
 				if parseOpt == 'Y':
 					listOfXMLDataSource = LookForDataSource()
 					if len(listOfXMLDataSource) > 0:
@@ -105,11 +105,9 @@ if __name__ == "__main__":
 						print("No sample XML data source found. This is crazy. I don't have anything to work with. Sorry. I'm done.")
 						sys.exit(0)
 		
-				elif parseOpt == 'N':
+				else:
 					print("Continuing into framework.")
 					break
-				else:
-					print("Wrong Input. Try again!")
 			except ValueError:
 				print("Oops! That's not a number. Try Again... ")
 			else:
