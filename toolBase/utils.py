@@ -312,10 +312,16 @@ class processParameter():
 	def paramVal(self):
 	#This method finds the command argument values
 		if isinstance(self.dictOfParameter[self.parameter],str):
-			self.listOfParamValueStrings.append(self.parameter + ' "' + self.dictOfParameter[self.parameter]+'"')
+			if self.dictOfParameter[self.parameter] == '':
+				self.listOfParamValueStrings.append(self.parameter)				
+			else:
+				self.listOfParamValueStrings.append(self.parameter + ' "' + self.dictOfParameter[self.parameter]+'"')
 		else:
 			for eachParamVal in self.dictOfParameter[self.parameter]:
-				self.listOfParamValueStrings.append(self.parameter + ' "' + eachParamVal+'"')
+				if eachParamVal == '':
+					self.listOfParamValueStrings.append(self.parameter)
+				else:
+					self.listOfParamValueStrings.append(self.parameter + ' "' + eachParamVal+'"')
 #		print("Param Value strings: " )
 #		print(self.listOfParamValueStrings)
 
@@ -324,19 +330,31 @@ class processParameter():
 		for eachMandArg in self.mandArgs:
 			if isinstance(eachMandArg,str):
 				if isinstance(self.dictOfParameter[eachMandArg],str):
-					self.listOfMandStrings.append(eachMandArg + ' "' + self.dictOfParameter[eachMandArg]+'"')
+					if self.dictOfParameter[eachMandArg] == '':
+						self.listOfMandStrings.append(eachMandArg)
+					else:
+						self.listOfMandStrings.append(eachMandArg + ' "' + self.dictOfParameter[eachMandArg]+'"')						
 				else:
 					for eachMandVal in self.dictOfParameter[eachMandArg]:
-						self.listOfMandStrings.append(eachMandArg + ' "' + eachMandVal+'"')
+						if eachMandVal == '':
+							self.listOfMandStrings.append(eachMandArg)
+						else:
+							self.listOfMandStrings.append(eachMandArg + ' "' + eachMandVal+'"')
 			else:
 				listOfStringsMaj = []
 				for i in range(len(eachMandArg)):
 					listOfStrings = []
 					if isinstance(self.dictOfParameter[eachMandArg[i]],str):
-						listOfStrings.append(eachMandArg[i] + ' "' + self.dictOfParameter[eachMandArg[i]]+'"')
+						if self.dictOfParameter[eachMandArg[i]] == '':
+							listOfStrings.append(eachMandArg[i])
+						else:
+							listOfStrings.append(eachMandArg[i] + ' "' + self.dictOfParameter[eachMandArg[i]]+'"')
 					else:
 						for eachMandVal in self.dictOfParameter[eachMandArg[i]]:
-							listOfStrings.append(eachMandArg[i] + ' "' + eachMandVal+'"')
+							if eachMandVal == '':
+								listOfStrings.append(eachMandArg[i])
+							else:
+								listOfStrings.append(eachMandArg[i] + ' "' + eachMandVal+'"')
 					listOfStringsMaj.append(listOfStrings)
 				for eachComb in list(itertools.product(*listOfStringsMaj)):
 					string = ''
@@ -352,19 +370,31 @@ class processParameter():
 		for eachOptArg in self.optArgs:
 			if isinstance(eachOptArg,str):
 				if isinstance(self.dictOfParameter[eachOptArg],str):
-					self.listOfOptStrings.append(eachOptArg + ' "' + self.dictOfParameter[eachOptArg]+'"')
+					if self.dictOfParameter[eachOptArg] == '':
+						self.listOfOptStrings.append(eachOptArg)
+					else:
+						self.listOfOptStrings.append(eachOptArg + ' "' + self.dictOfParameter[eachOptArg]+'"')
 				else:
 					for eachOptVal in self.dictOfParameter[eachOptArg]:
-						self.listOfOptStrings.append(eachOptArg + ' "' + eachOptVal+'"')
+						if eachOptVal == '':
+							self.listOfOptStrings.append(eachOptArg)
+						else:
+							self.listOfOptStrings.append(eachOptArg + ' "' + eachOptVal+'"')
 			else:
 				listOfStringsMaj = []
 				for i in range(len(eachOptArg)):
 					listOfStrings = []
 					if isinstance(self.dictOfParameter[eachOptArg[i]],str):
-						listOfStrings.append(eachOptArg[i] + ' "' + self.dictOfParameter[eachOptArg[i]]+'"')
+						if self.dictOfParameter[eachOptArg[i]] == '':
+							listOfStrings.append(eachOptArg[i])
+						else:
+							listOfStrings.append(eachOptArg[i] + ' "' + self.dictOfParameter[eachOptArg[i]]+'"')
 					else:
 						for eachOptVal in self.dictOfParameter[eachOptArg[i]]:
-							listOfStrings.append(eachOptArg[i] + ' "' + eachOptVal+'"')
+							if eachOptVal == '':
+								listOfStrings.append(eachOptArg[i])
+							else:
+								listOfStrings.append(eachOptArg[i] + ' "' + eachOptVal+'"')
 					listOfStringsMaj.append(listOfStrings)
 				for eachComb in list(itertools.product(*listOfStringsMaj)):
 					string = ''
